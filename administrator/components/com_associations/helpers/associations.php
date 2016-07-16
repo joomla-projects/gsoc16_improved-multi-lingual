@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\Registry\Registry;
+
 /**
  * Associations component helper.
  *
@@ -17,7 +19,111 @@ defined('_JEXEC') or die;
 class AssociationsHelper extends JHelperContent
 {
 	public static $extension = 'com_associations';
-	
+
+	/**
+	 * xxxx.
+	 *
+	 * xxxx.
+	 *
+	 * @param   string  $component  The component/extension identifier.
+	 *
+	 * @return  JRegistry  The component properties.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getComponentProperties($component = '')
+	{
+		static $properties = null;
+
+		if (empty($component))
+		{
+			return null;
+		}
+
+		if (is_null($properties))
+		{
+			// Get component info from string.
+			preg_match('#(.+)\.([a-zA-Z0-9_\-]+)(|\|(.+))$#', $component, $matches);
+
+			$properties = new Registry;
+			$properties->component = $matches[1];
+			$properties->item      = $matches[2];
+			$properties->extension = isset($matches[4]) ? $matches[4] : null;
+
+			// Categories component.
+			// @todo This need to be checked without harcoded.
+			if ($properties->component === 'com_categories' && !is_null($properties->extension))
+			{
+				$table = '#__categories';
+			}
+			// Menus component.
+			elseif ($properties->component === 'com_menus')
+			{
+				$table = '#__menu';
+			}
+			// All other components.
+			else
+			{
+				// Get component item table.
+				$filePath = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models/' . $properties->item . '.php';
+				$file = file_get_contents($filePath);
+				if ($position = strpos($file, 'getAssociations'))
+				{
+					// Searching for , '#__table' , after getAssociations(.
+					$start = strpos($file, ',', $position) + 2;
+					$end = strpos($file, ',', $start) - 1;
+
+					$table = str_replace("'", "", substr($file, $start, $end - $start));
+					
+				}
+			}
+
+			// Save the table and get the table fields.
+			$properties->table       = $table;
+			$properties->tableFields = JFactory::getDbo()->getTableColumns($table);
+
+			// Component fields
+			// @todo This need should be checked hardcoding.
+			$properties->fields            = new Registry;
+			$properties->fields->title     = isset($properties->tableFields['name']) ? 'name' : null;
+			$properties->fields->title     = isset($properties->tableFields['title']) ? 'title' : $properties->fields->title;
+			$properties->fields->alias     = isset($properties->tableFields['alias']) ? 'alias' : null;
+			$properties->fields->ordering  = isset($properties->tableFields['ordering']) ? 'ordering' : null;
+			$properties->fields->ordering  = isset($properties->tableFields['lft']) ? 'lft' : $properties->fields->ordering;
+			$properties->fields->menutype  = isset($properties->tableFields['menutype']) ? 'menutype' : null;
+			$properties->fields->level     = isset($properties->tableFields['level']) ? 'level' : null;
+			$properties->fields->catid     = isset($properties->tableFields['catid']) ? 'catid' : null;
+			$properties->fields->language  = isset($properties->tableFields['language']) ? 'language' : null;
+			$properties->fields->access    = isset($properties->tableFields['access']) ? 'access' : null;
+			$properties->fields->published = isset($properties->tableFields['published']) ? 'published' : null;
+			$properties->fields->published = isset($properties->tableFields['state']) ? 'state' : $properties->fields->published;
+
+			// Association column key
+			// @todo This need to be checked hardcoding.
+			if ($properties->component == 'com_content')
+			{
+				$properties->associationKey = 'contentadministrator.association';
+			}
+			elseif ($properties->component == 'com_categories')
+			{
+				$properties->associationKey = 'categoriesadministrator.association';
+			}
+			elseif ($properties->component == 'com_menus')
+			{
+				$properties->associationKey = 'MenusHtml.Menus.association';
+			}
+			else
+			{
+				$properties->associationKey = $properties->item . '.association';
+			}
+
+			// Asset coluns key
+			$properties->assetKey = $properties->component . '.' . $properties->item;
+		}
+
+		return $properties;
+	}
+
 	/**
 	 * Method to load the language files for the components using associations.
 	 *
