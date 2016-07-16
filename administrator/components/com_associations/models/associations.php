@@ -67,7 +67,7 @@ class AssociationsModelAssociations extends JModelList
 		$this->setState('filter.published', $this->getUserStateFromRequest($this->context . '.filter.published', 'filter_published', '', 'cmd'));
 		$this->setState('filter.category_id', $this->getUserStateFromRequest($this->context . '.filter.category_id', 'filter_category_id', '', 'cmd'));
 		$this->setState('filter.menutype', $this->getUserStateFromRequest($this->context . '.filter.menutype', 'filter_menutype', '', 'string'));
-		$this->setState('filter.accesslevel', $this->getUserStateFromRequest($this->context . '.filter.accesslevel', 'filter_accesslevel', '', 'string'));
+		$this->setState('filter.access', $this->getUserStateFromRequest($this->context . '.filter.access', 'filter_access', '', 'string'));
 		$this->setState('filter.level', $this->getUserStateFromRequest($this->context . '.filter.level', 'filter_level', '', 'cmd'));
 
 		// List state information.
@@ -96,7 +96,7 @@ class AssociationsModelAssociations extends JModelList
 		$id .= ':' . $this->getState('filter.published');
 		$id .= ':' . $this->getState('filter.category_id');
 		$id .= ':' . $this->getState('filter.menutype');
-		$id .= ':' . $this->getState('filter.accesslevel');
+		$id .= ':' . $this->getState('filter.access');
 		$id .= ':' . $this->getState('filter.level');
 
 		return parent::getStoreId($id);
