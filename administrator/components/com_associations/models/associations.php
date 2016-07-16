@@ -187,7 +187,7 @@ class AssociationsModelAssociations extends JModelList
 				->where($db->quoteName('a.client_id') . ' = 0');
 		}
 		// If component is categories we need to remove all other component categories.
-		else if ($component->table === '#__categories')
+		elseif ($component->table === '#__categories')
 		{
 			$query->where($db->quoteName('a.extension') . ' = ' . $db->quote($component->extension));
 		}
