@@ -60,8 +60,8 @@ $iconStates = array(
 						<?php echo JHtml::_('searchtools.sort', 'COM_ASSOCIATIONS_HEADING_ASSOCIATION', 'association', $listDirn, $listOrder); ?>
 					</th>
 					<?php if (!is_null($this->component->fields->menutype)) : ?>
-						<th width="5%" class="nowrap">
-							<?php echo JHtml::_('searchtools.sort', 'COM_ASSOCIATIONS_HEADING_MENU', 'menutype', $listDirn, $listOrder); $colSpan++; ?>
+						<th width="10%" class="nowrap">
+							<?php echo JHtml::_('searchtools.sort', 'COM_ASSOCIATIONS_HEADING_MENU', 'menutype_title', $listDirn, $listOrder); $colSpan++; ?>
 						</th>
 					<?php endif; ?>
 					<?php if (!is_null($this->component->fields->access)) : ?>
@@ -116,8 +116,8 @@ $iconStates = array(
 						<?php endif; ?>
 					</td>
 					<?php if (!is_null($this->component->fields->menutype)) : ?>
-						<td>
-							<?php echo $this->escape($item->menutype); ?>
+						<td class="small">
+							<?php echo $this->escape($item->menutype_title); ?>
 						</td>
 					<?php endif; ?>
 					<?php if (!is_null($this->component->fields->access)) : ?>
