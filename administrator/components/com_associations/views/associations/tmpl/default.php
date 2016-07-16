@@ -83,6 +83,7 @@ $iconStates = array(
 			</tfoot>
 			<tbody>
 			<?php foreach ($this->items as $i => $item) : ?>
+				<?php // @todo ACL check ?>
 				<tr class="row<?php echo $i % 2; ?>">
 					<?php if (!is_null($this->component->fields->published)) : ?>
 						<td class="center">
