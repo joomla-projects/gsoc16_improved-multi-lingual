@@ -225,8 +225,8 @@ class AssociationsModelAssociations extends JModelList
 		// Filter on the level.
 		if ($level = $this->getState('filter.level'))
 		{
-			$tableAlias = ($component->component === 'com_menus' || $component->component === 'com_categories') ? 'a' : 'c';
-			$query->where($db->quoteName($tableAlias . '.' . $component->fields->level) . ' <= ' . ((int) $level + (int) $baselevel - 1));
+			$tableAlias = in_array($component->component, array('com_menus', 'com_categories')) ? 'a' : 'c';
+			$query->where($db->quoteName($tableAlias . '.level') . ' <= ' . ((int) $level + (int) $baselevel - 1));
 		}
 
 		// Filter by menu type.
