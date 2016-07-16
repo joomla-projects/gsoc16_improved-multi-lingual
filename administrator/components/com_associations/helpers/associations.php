@@ -21,9 +21,7 @@ class AssociationsHelper extends JHelperContent
 	public static $extension = 'com_associations';
 
 	/**
-	 * xxxx.
-	 *
-	 * xxxx.
+	 * Get component properties based on a string.
 	 *
 	 * @param   string  $component  The component/extension identifier.
 	 *
@@ -74,7 +72,7 @@ class AssociationsHelper extends JHelperContent
 					$end = strpos($file, ',', $start) - 1;
 
 					$table = str_replace("'", "", substr($file, $start, $end - $start));
-					
+
 				}
 			}
 
@@ -117,7 +115,8 @@ class AssociationsHelper extends JHelperContent
 				$properties->associationKey = $properties->item . '.association';
 			}
 
-			// Asset coluns key
+			// Asset column key.
+			// @todo This need to be confirmed.
 			$properties->assetKey = $properties->component . '.' . $properties->item;
 		}
 
