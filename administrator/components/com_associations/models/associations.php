@@ -35,7 +35,7 @@ class AssociationsModelAssociations extends JModelList
 				'component',
 				'language',
 				'association',
-				'menutype',
+				'menutype', 'menutype_title',
 				'level',
 				'published',
 				'category_id', 'category_title',
@@ -163,7 +163,10 @@ class AssociationsModelAssociations extends JModelList
 		// If component supports menu type, select the menu type also.
 		if (!is_null($component->fields->menutype))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'));
+			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'))
+				->select($db->quoteName('mt.title', 'menutype_title'))
+				->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
+
 		}
 
 		// If component supports access level, select the access level also.
