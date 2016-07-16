@@ -72,7 +72,6 @@ class AssociationsHelper extends JHelperContent
 					$end = strpos($file, ',', $start) - 1;
 
 					$table = str_replace("'", "", substr($file, $start, $end - $start));
-
 				}
 			}
 
