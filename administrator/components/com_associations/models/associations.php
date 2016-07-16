@@ -38,8 +38,8 @@ class AssociationsModelAssociations extends JModelList
 				'menutype',
 				'level',
 				'published',
-				'category_id', 'category_title',
-				'access', 'access_level',
+				'category_id',
+				'accesslevel',
 			);
 		}
 
