@@ -53,7 +53,8 @@ if ($data['view'] instanceof AssociationsViewAssociations)
 		unset($data['view']->activeFilters['menutype']);
 		$data['view']->filterForm->removeField('menutype', 'filter');
 	}
-	if (is_null($data['view']->component) || (is_null($data['view']->component->fields->catid) && is_null($data['view']->component->fields->menutype)))
+	if (is_null($data['view']->component)
+		|| (is_null($data['view']->component->fields->catid) && !in_array($data['view']->component->component, array('com_categories', 'com_menus'))))
 	{
 		unset($data['view']->activeFilters['level']);
 		$data['view']->filterForm->removeField('level', 'filter');
