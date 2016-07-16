@@ -95,8 +95,8 @@
 			<option value="category_title DESC">JCATEGORY_DESC</option>
 			<option value="association ASC">JASSOCIATIONS_ASC</option>
 			<option value="association DESC">JASSOCIATIONS_DESC</option>
-			<option value="menutype_title ASC">COM_ASSOCIATION_HEADING_MENUTYPE_ASC</option>
-			<option value="menutype_title DESC">COM_ASSOCIATION_HEADING_MENUTYPE_DESC</option>
+			<option value="menutype_title ASC">COM_ASSOCIATIONS_HEADING_MENUTYPE_ASC</option>
+			<option value="menutype_title DESC">COM_ASSOCIATIONS_HEADING_MENUTYPE_DESC</option>
 			<option value="access_level ASC">JGRID_HEADING_ACCESS_ASC</option>
 			<option value="access_level DESC">JGRID_HEADING_ACCESS_DESC</option>
 			<option value="a.id ASC">JGRID_HEADING_ID_ASC</option>
