@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>
 	<field
-		name="associationcomponent"
+		name="component"
 		type="associatedcomponent"
 		label="COM_ASSOCIATIONS_COMPONENT_SELECTOR_LABEL"
 		description="COM_ASSOCIATIONS_COMPONENT_SELECTOR_DESC"
-		onchange="this.form.submit();"
+		onchange="jQuery('select[id^=\'filter_\']').val('');this.form.submit();"
 		>
 		<option value="">COM_ASSOCIATIONS_FILTER_SELECT_ITEM_TYPE</option>
 	</field>
 	<field
-		name="associationlanguage"
+		name="language"
 		type="contentlanguage"
 		label="JOPTION_FILTER_LANGUAGE"
 		description="JOPTION_FILTER_LANGUAGE_DESC"
@@ -26,7 +26,57 @@
 			description="COM_ASSOCIATIONS_FILTER_SEARCH_DESC"
 			hint="JSEARCH_FILTER"
 		/>
+		<field
+			name="published"
+			type="status"
+			label="JOPTION_FILTER_PUBLISHED"
+			description="JOPTION_FILTER_PUBLISHED_DESC"
+			onchange="this.form.submit();"
+			>
+			<option value="">JOPTION_SELECT_PUBLISHED</option>
+		</field>
+		<field
+			name="category_id"
+			type="category"
+			label="JOPTION_FILTER_CATEGORY"
+			description="JOPTION_FILTER_CATEGORY_DESC"
+			published="0,1,2"
+			onchange="this.form.submit();"
+			>
+			<option value="">JOPTION_SELECT_CATEGORY</option>
+		</field>
+		<field
+			name="menutype"
+			type="menu"
+			label="COM_ASSOCIATIONS_FILTER_MENUTYPE_LABEL"
+			description="COM_ASSOCIATIONS_FILTER_MENUTYPE_DESC"
+			onchange="this.form.submit();"
+			>
+			<option value="">COM_ASSOCIATIONS_SELECT_MENU</option>
+		</field>
+		<field
+			name="access"
+			type="accesslevel"
+			label="JOPTION_FILTER_ACCESS"
+			description="JOPTION_FILTER_ACCESS_DESC"
+			onchange="this.form.submit();"
+			>
+			<option value="">JOPTION_SELECT_ACCESS</option>
+		</field>
+		<field
+			name="level"
+			type="integer"
+			label="JOPTION_FILTER_LEVEL"
+			description="JOPTION_FILTER_LEVEL_DESC"
+			first="1"
+			last="10"
+			step="1"
+			onchange="this.form.submit();"
+			>
+			<option value="">JOPTION_SELECT_MAX_LEVELS</option>
+		</field>
 	</fields>
+
 	<fields name="list">
 		<field
 			name="fullordering"
@@ -37,8 +87,12 @@
 			<option value="">JGLOBAL_SORT_BY</option>
 			<option value="ordering ASC">JGRID_HEADING_ORDERING_ASC</option>
 			<option value="ordering DESC">JGRID_HEADING_ORDERING_DESC</option>
+			<option value="published ASC">JSTATUS_ASC</option>
+			<option value="published DESC">JSTATUS_DESC</option>
 			<option value="title ASC">JGLOBAL_TITLE_ASC</option>
 			<option value="title DESC">JGLOBAL_TITLE_DESC</option>
+			<option value="category_title ASC">JCATEGORY_ASC</option>
+			<option value="category_title DESC">JCATEGORY_DESC</option>
 			<option
 				value="association ASC"
 				requires="associations"
@@ -51,8 +105,10 @@
 				>
 				JASSOCIATIONS_DESC
 			</option>
-			<option value="a.menutype ASC">COM_MENUS_HEADING_MENU_ASC</option>
-			<option value="a.menutype DESC">COM_MENUS_HEADING_MENU_DESC</option>
+			<option value="menutype ASC">COM_ASSOCIATION_HEADING_MENUTYPE_ASC</option>
+			<option value="menutype DESC">COM_ASSOCIATION_HEADING_MENUTYPE_DESC</option>
+			<option value="access_level ASC">JGRID_HEADING_ACCESS_ASC</option>
+			<option value="access_level DESC">JGRID_HEADING_ACCESS_DESC</option>
 			<option value="a.id ASC">JGRID_HEADING_ID_ASC</option>
 			<option value="a.id DESC">JGRID_HEADING_ID_DESC</option>
 		</field>
