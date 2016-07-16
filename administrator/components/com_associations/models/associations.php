@@ -156,7 +156,7 @@ class AssociationsModelAssociations extends JModelList
 		if (!is_null($component->fields->catid))
 		{
 			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'))
-			->select($db->quoteName('c.title', 'category_title'))
+				->select($db->quoteName('c.title', 'category_title'))
 				->join('LEFT', $db->quoteName('#__categories','c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
 		}
 
