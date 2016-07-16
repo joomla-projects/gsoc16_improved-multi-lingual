@@ -18,11 +18,11 @@ $listOrder  = $this->escape($this->state->get('list.ordering'));
 $listDirn   = $this->escape($this->state->get('list.direction'));
 $colSpan    =  4;
 $iconStates = array(
-					-2 => 'icon-trash',
-					0  => 'icon-unpublish',
-					1  => 'icon-publish',
-					2  => 'icon-archive',
-				);
+	-2 => 'icon-trash',
+	0  => 'icon-unpublish',
+	1  => 'icon-publish',
+	2  => 'icon-archive',
+);
 ?>
 <form action="<?php echo JRoute::_('index.php?option=com_associations&view=associations'); ?>" method="post" name="adminForm" id="adminForm">
 
