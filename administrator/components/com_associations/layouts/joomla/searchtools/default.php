@@ -37,8 +37,6 @@ if ($data['view'] instanceof AssociationsViewAssociations)
 	unset($data['view']->activeFilters['component']);
 	unset($data['view']->activeFilters['language']);
 	
-	//$order = $data['view']->filterForm->getField('fullordering', 'list');
-	
 	// Remove filters and ordering options depending on selected component.
 	if (is_null($data['view']->component) || is_null($data['view']->component->fields->published))
 	{
