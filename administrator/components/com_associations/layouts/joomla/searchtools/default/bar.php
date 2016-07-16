@@ -14,8 +14,8 @@ $data = $displayData;
 if ($data['view'] instanceof AssociationsViewAssociations)
 {
 	// We will get the component and language filters & remove it from the form filters
-	$componentTypeField = $data['view']->filterForm->getField('associationcomponent');
-	$languageField      = $data['view']->filterForm->getField('associationlanguage');
+	$componentTypeField = $data['view']->filterForm->getField('component');
+	$languageField      = $data['view']->filterForm->getField('language');
 ?>
 	<div class="js-stools-field-filter js-stools-selector">
 		<?php echo $componentTypeField->input; ?>
