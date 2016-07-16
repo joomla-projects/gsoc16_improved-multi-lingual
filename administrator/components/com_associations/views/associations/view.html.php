@@ -46,7 +46,7 @@ class AssociationsViewAssociations extends JViewLegacy
 	/**
 	 * Selected component
 	 *
-	 * @var  string
+	 * @var  Registry
 	 *
 	 * @since __DEPLOY_VERSION__
 	 */
@@ -80,11 +80,13 @@ class AssociationsViewAssociations extends JViewLegacy
 			$this->component  = AssociationsHelper::getComponentProperties($this->state->get('component'));
 			$this->items      = $this->get('Items');
 			$this->pagination = $this->get('Pagination');
+
 			$linkParameters = array(
-								'layout'     => 'edit',
-								'acomponent' => $this->component->component,
-								'aview'      => $this->component->item,
-							);
+				'layout'     => 'edit',
+				'acomponent' => $this->component->component,
+				'aview'      => $this->component->item,
+			);
+
 			if (!is_null($this->component->extension))
 			{
 				$linkParameters['extension'] = $this->component->extension;
