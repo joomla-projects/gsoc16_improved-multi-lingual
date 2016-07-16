@@ -32,11 +32,14 @@ class AssociationsModelAssociations extends JModelList
 				'id', 'a.id',
 				'title',
 				'ordering',
-				'level', 'a.level',
-				'menutype', 'a.menutype',
+				'component',
+				'language',
 				'association',
-				'associationlanguage',
-				'associationcomponent',
+				'menutype',
+				'level',
+				'published',
+				'category_id', 'category_title',
+				'access', 'access_level',
 			);
 		}
 
@@ -55,19 +58,17 @@ class AssociationsModelAssociations extends JModelList
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	protected function populateState($ordering = 'title', $direction = 'asc')
+	protected function populateState($ordering = 'ordering', $direction = 'asc')
 	{
+		$this->setState('component', $this->getUserStateFromRequest($this->context . '.component', 'component', '', 'string'));
+		$this->setState('language', $this->getUserStateFromRequest($this->context . '.language', 'language', '', 'string'));
+
 		$this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
-		$this->setState(
-			'associationlanguage', $this->getUserStateFromRequest(
-					$this->context . '.associationlanguage', 'associationlanguage', '', 'string'
-				)
-			);
-		$this->setState(
-			'associationcomponent', $this->getUserStateFromRequest(
-					$this->context . '.associationcomponent', 'associationcomponent', '', 'string'
-				)
-			);
+		$this->setState('filter.published', $this->getUserStateFromRequest($this->context . '.filter.published', 'filter_published', '', 'cmd'));
+		$this->setState('filter.category_id', $this->getUserStateFromRequest($this->context . '.filter.category_id', 'filter_category_id', '', 'cmd'));
+		$this->setState('filter.menutype', $this->getUserStateFromRequest($this->context . '.filter.menutype', 'filter_menutype', '', 'string'));
+		$this->setState('filter.accesslevel', $this->getUserStateFromRequest($this->context . '.filter.accesslevel', 'filter_accesslevel', '', 'string'));
+		$this->setState('filter.level', $this->getUserStateFromRequest($this->context . '.filter.level', 'filter_level', '', 'cmd'));
 
 		// List state information.
 		parent::populateState($ordering, $direction);
@@ -89,9 +90,14 @@ class AssociationsModelAssociations extends JModelList
 	protected function getStoreId($id = '')
 	{
 		// Compile the store id.
+		$id .= ':' . $this->getState('component');
+		$id .= ':' . $this->getState('language');
 		$id .= ':' . $this->getState('filter.search');
-		$id .= ':' . $this->getState('associationlanguage');
-		$id .= ':' . $this->getState('associationcomponent');
+		$id .= ':' . $this->getState('filter.published');
+		$id .= ':' . $this->getState('filter.category_id');
+		$id .= ':' . $this->getState('filter.menutype');
+		$id .= ':' . $this->getState('filter.accesslevel');
+		$id .= ':' . $this->getState('filter.level');
 
 		return parent::getStoreId($id);
 	}
@@ -106,115 +112,137 @@ class AssociationsModelAssociations extends JModelList
 	protected function getListQuery()
 	{
 		// Create a new query object.
-		$db             = $this->getDbo();
-		$query          = $db->getQuery(true);
-		$component      = $this->getState('associationcomponent');
-		$table          = '';
-		$extension      = '';
+		$user      = JFactory::getUser();
+		$db        = $this->getDbo();
+		$query     = $db->getQuery(true);
+		$component = AssociationsHelper::getComponentProperties($this->getState('component'));
 
-		// If it's not a category
-		if (!strpos($component, '|'))
-		{
-			$componentSplit = explode('.', $component);
-			$componentModelPath = JPATH_ADMINISTRATOR . '/components/' . $componentSplit[0]
-				. '/models/' . $componentSplit[1] . '.php';
-			$componentModel     = file_get_contents($componentModelPath);
-
-			if ($position = strpos($componentModel, 'getAssociations'))
-			{
-				// Searching for , '#__table' , after getAssociations(
-				$start = strpos($componentModel, ',', $position) + 2;
-				$end = strpos($componentModel, ',', $start) - 1;
-
-				if ($componentSplit[0] == 'com_menus')
-				{
-					$table = '#__menu';
-				}
-				else
-				{
-					$table = str_replace("'", "", substr($componentModel, $start, $end - $start));
-				}
-			}
-		}
-		// If it's a category
-		elseif (strpos($component, '|'))
-		{
-			$componentSplit = explode('|', $component);
-			$extension      = $componentSplit[1];
-			$table          = '#__categories';
-		}
-
-		$columns  = $db->getTableColumns($table);
-		$title    = isset($columns['title']) ? 'a.title' : 'a.name';
-		$ordering = isset($columns['lft']) ? 'a.lft' : 'a.ordering';
+		// Main query.
 		$query->select($db->quoteName('a.id'))
-			->select($db->quoteName($title, 'title'))
-			->select($db->quoteName('a.language'))
-			->select($db->quoteName($ordering, 'ordering'));
-
-		if (isset($columns['level']))
-		{
-			$query->select($db->quoteName('a.level'));
-		}
-
-		if ($table == '#__menu')
-		{
-			$query->select($db->quoteName('a.menutype'));
-		}
-
-		$query->from($db->quoteName($table, 'a'));
+			->select($db->quoteName('a.' . $component->fields->title, 'title'))
+			->select($db->quoteName('a.' . $component->fields->alias, 'alias'))
+			->select($db->quoteName('a.' . $component->fields->ordering, 'ordering'))
+			->from($db->quoteName($component->table, 'a'));
 
 		// Join over the language
-		$query->select(
-			array(
-				$db->quoteName('l.title', 'language_title'),
-				$db->quoteName('l.image', 'language_image')
-			)
-		)
-			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->quoteName('l.lang_code') . ' = ' . $db->quoteName('a.language'));
+		$query->select($db->quoteName('a.' . $component->fields->language, 'language'))
+			->select($db->quoteName('l.title', 'language_title'))
+			->select($db->quoteName('l.image', 'language_image'))
+			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->qn('l.lang_code') . ' = ' . $db->qn('a.' . $component->fields->language));
 
 		// Join over the associations.
-		$query->select('COUNT(' . $db->quoteName('asso2.id') . ') > 1 as ' . $db->quoteName('association'))
+		$query->select('COUNT(' . $db->quoteName('asso2.id') . ') > 1 AS ' . $db->quoteName('association'))
 			->join(
 				'LEFT',
 				$db->quoteName('#__associations', 'asso') . ' ON ' . $db->quoteName('asso.id') . ' = ' . $db->quoteName('a.id')
-				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($componentSplit[0] . '.item')
+				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($component->component . '.item')
 			)
-			->join(
-				'LEFT',
-				$db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key')
-			)
-			->group(
-				$db->quoteName(
-					array(
-						'a.id',
-						'title',
-						'a.language'
-					)
-				)
-			);
+			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'))
+			->group($db->quoteName(array('a.id', 'title', 'language')));
 
-		if ($table == '#__menu')
+		// If component supports state, select the published state also.
+		if (!is_null($component->fields->published))
 		{
-			// Exclude the root category.
-			$query->where('a.id > 1')
-				->where('a.client_id = 0');
+			$query->select($db->quoteName('a.' . $component->fields->published, 'published'));
 		}
 
-		if ($table == '#__categories')
+		// If component supports level, select the level also.
+		if (!is_null($component->fields->level))
 		{
-			$query->where($db->quoteName('a.extension') . ' = ' . $db->quote($extension));
+			$query->select($db->quoteName('a.' . $component->fields->level, 'level'));
+		}
+
+		// If component supports categories, select the category also.
+		if (!is_null($component->fields->catid))
+		{
+			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'))
+			->select($db->quoteName('c.title', 'category_title'))
+				->join('LEFT', $db->quoteName('#__categories','c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
+		}
+
+		// If component supports menu type, select the menu type also.
+		if (!is_null($component->fields->menutype))
+		{
+			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'));
+		}
+
+		// If component supports access level, select the access level also.
+		if (!is_null($component->fields->access))
+		{
+			$query->select($db->quoteName('a.' . $component->fields->access, 'access'))
+				->select($db->quoteName('ag.title', 'access_level'))
+				->join('LEFT', $db->quoteName('#__viewlevels','ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $component->fields->access));
+
+			// Implement View Level Access
+			if (!$user->authorise('core.admin', $component->assetKey))
+			{
+				$query->where('a.' . $component->fields->access . ' IN (' . implode(',', $user->getAuthorisedViewLevels()) . ')');
+			}
+		}
+
+		// If component is menus we need to remove the root item and the administrator menu.
+		if ($component->table === '#__menu')
+		{
+			$query->where($db->quoteName('a.id') . ' > 1')
+				->where($db->quoteName('a.client_id') . ' = 0');
+		}
+		// If component is categories we need to remove all other component categories.
+		else if ($component->table === '#__categories')
+		{
+			$query->where($db->quoteName('a.extension') . ' = ' . $db->quote($component->extension));
 		}
 
 		// Filter on the language.
-		if ($language = $this->getState('associationlanguage'))
+		if ($language = $this->getState('language'))
 		{
-			$query->where($db->quoteName('a.language') . ' = ' . $db->quote($language));
+			$query->where($db->quoteName('a.' . $component->fields->language) . ' = ' . $db->quote($language));
+		}
+
+		// Filter by published state.
+		$published = $this->getState('filter.published');
+
+		if (is_numeric($published))
+		{
+			$query->where($db->quoteName('a.' . $component->fields->published) . ' = ' . (int) $published);
+		}
+		elseif ($published === '')
+		{
+			$query->where($db->quoteName('a.' . $component->fields->published) . ' IN (0, 1)');
+		}
+
+		// Filter on the category.
+		$baselevel = 1;
+
+		if ($categoryId = $this->getState('filter.category_id'))
+		{
+			$categoryTable = JTable::getInstance('Category', 'JTable');
+			$categoryTable->load($categoryId);
+			$baselevel = (int) $categoryTable->level;
+			$query->where($db->quoteName('c.lft') . ' >= ' . (int) $categoryTable->lft)
+				->where($db->quoteName('c.rgt') . ' <= ' . (int) $categoryTable->rgt);
+		}
+
+		// Filter on the level.
+		if ($level = $this->getState('filter.level'))
+		{
+			$tableAlias = ($component->component === 'com_menus' || $component->component === 'com_categories') ? 'a' : 'c';
+			$query->where($db->quoteName($tableAlias . '.' . $component->fields->level) . ' <= ' . ((int) $level + (int) $baselevel - 1));
+		}
+
+		// Filter by menu type.
+		if ($menutype = $this->getState('filter.menutype'))
+		{
+			$query->where('a.' . $component->fields->menutype . ' = ' . $db->quote($menutype));
+		}
+
+		// Filter by access level.
+		if ($access = $this->getState('filter.access'))
+		{
+			$query->where('a.' . $component->fields->access . ' = ' . (int) $access);
 		}
 
 		// Filter by search in name.
-		$search = $this->getState('filter.search');
-		if (!empty($search))
+		if ($search = $this->getState('filter.search'))
 		{
 			if (stripos($search, 'id:') === 0)
 			{
@@ -223,22 +251,12 @@ class AssociationsModelAssociations extends JModelList
 			else
 			{
 				$search = $db->quote('%' . str_replace(' ', '%', $db->escape(trim($search), true) . '%'));
-				$query->where(
-					'(' . $db->quoteName('title') . ' LIKE ' . $search . ')'
-				);
+				$query->where('(' . $db->quoteName('title') . ' LIKE ' . $search . ' OR ' . $db->quoteName('alias') . ' LIKE ' . $search . ')');
 			}
 		}
 
 		// Add the list ordering clause.
-		if ($table != '#__menu')
-		{
-			$this->setState('list.ordering', 'ordering');
-		}
-
-		$orderCol = $this->state->get('list.ordering', 'ordering');
-		$orderDirn = $this->state->get('list.direction', 'asc');
-
-		$query->order($db->escape($orderCol . ' ' . $orderDirn));
+		$query->order($db->escape($this->state->get('list.ordering', 'ordering')) . ' ' . $db->escape($this->state->get('list.direction', 'asc')));
 
 		return $query;
 	}
