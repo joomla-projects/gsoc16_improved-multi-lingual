@@ -93,7 +93,7 @@ $iconStates = array(
 						<?php if (!is_null($this->component->fields->level)) : ?>
 							<?php echo JLayoutHelper::render('joomla.html.treeprefix', array('level' => $item->level)); ?>
 						<?php endif; ?>	
-						<a href="<?php echo JRoute::_($this->editLink. '&forcedlanguage=' . $item->language . '&id=' . (int) $item->id); ?>">
+						<a href="<?php echo JRoute::_($this->editLink . '&forcedlanguage=' . $item->language . '&id=' . (int) $item->id); ?>">
 							<?php echo $this->escape($item->title); ?></a>
 						<?php if (!is_null($this->component->fields->alias)) : ?>
 							<span class="small">
