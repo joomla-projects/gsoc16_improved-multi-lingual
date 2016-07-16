@@ -251,7 +251,8 @@ class AssociationsModelAssociations extends JModelList
 			else
 			{
 				$search = $db->quote('%' . str_replace(' ', '%', $db->escape(trim($search), true) . '%'));
-				$query->where('(' . $db->quoteName('title') . ' LIKE ' . $search . ' OR ' . $db->quoteName('alias') . ' LIKE ' . $search . ')');
+				$query->where('(' . $db->quoteName('a.' . $component->fields->title) . ' LIKE ' . $search
+					. ' OR ' . $db->quoteName('a.' . $component->fields->alias) . ' LIKE ' . $search . ')');
 			}
 		}
 
