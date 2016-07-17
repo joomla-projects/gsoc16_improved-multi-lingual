@@ -39,6 +39,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 		$lang              = JFactory::getLanguage();
 		$options           = array();
 		$excludeComponents = array('com_categories', 'com_menus', 'com_config');
+		$typeAliasList     = array();
 
 		// Get all admin components.
 		foreach (glob(JPATH_ADMINISTRATOR . '/components/*', GLOB_NOSORT | GLOB_ONLYDIR) as $componentAdminPath)
@@ -61,14 +62,16 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 				JModelLegacy::addIncludePath($componentModelsPath, $itemName . 'Model');
 				$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
-				// Check if this model uses associations. Add component model option to select box if so.
-				if ($model->get('associationsContext'))
+				// Check if this model uses associations.
+				if ($model->get('associationsContext') && $model->get('typeAlias') && !in_array($model->get('typeAlias'), $typeAliasList))
 				{
 					// Load component language file.
 					$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
 
-					// Add componet option select box.
+					// Add component option select box.
 					$options[JText::_($component)][] = JHtml::_('select.option', $model->get('typeAlias'), JText::_($component));
+
+					array_push($typeAliasList, $model->get('typeAlias'));
 				}
 			}
 
