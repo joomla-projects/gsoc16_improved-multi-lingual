@@ -38,8 +38,32 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 	{
 		$lang              = JFactory::getLanguage();
 		$options           = array();
-		$excludeComponents = array('com_categories', 'com_menus', 'com_config', 'com_admin', 'com_users');
 		$typeAliasList     = array();
+		$excludeComponents = array(
+			'com_admin',
+			'com_ajax',
+			'com_cache',
+			'com_checkin',
+			'com_config',
+			'com_categories',
+			'com_contenthistory',
+			'com_cpanel',
+			'com_finder',
+			'com_installer',
+			'com_joomlaupdate',
+			'com_languages',
+			'com_login',
+			'com_media',
+			'com_messages',
+			'com_modules',
+			'com_plugins',
+			'com_postinstall',
+			'com_redirect',
+			'com_search',
+			'com_tags',
+			'com_templates',
+			'com_users',
+		);
 
 		// Get all admin components.
 		foreach (glob(JPATH_ADMINISTRATOR . '/components/*', GLOB_NOSORT | GLOB_ONLYDIR) as $componentAdminPath)
@@ -49,7 +73,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			$componentModelsPath = $componentAdminPath . '/models';
 
 			// Only components that exist also in the site client, aren't in the excluded components array and have models.
-			if (!is_dir(JPATH_SITE . '/components/' . $component) || !is_dir($componentModelsPath) || in_array($component, $excludeComponents))
+			if (!is_dir($componentModelsPath) || in_array($component, $excludeComponents))
 			{
 				continue;
 			}
@@ -63,9 +87,10 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 				$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
 				// Check if this model uses associations.
-				if ($model->get('associationsContext') && $model->get('typeAlias') && !in_array($model->get('typeAlias'), $typeAliasList))
+				if ($model && $model->get('associationsContext') && $model->get('typeAlias') && !in_array($model->get('typeAlias'), $typeAliasList))
 				{
 					// Load component language file.
+					$lang->load($component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($component . '.sys', $componentAdminPath);
 					$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
 
 					// Add component option select box.
@@ -83,18 +108,13 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 				if (method_exists($componentName . 'HelperAssociation', 'getCategoryAssociations'))
 				{
 					// Load component language file.
+					$lang->load($component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($component . '.sys', $componentAdminPath);
 					$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
 
-					$options[JText::_($component)][] = JHtml::_('select.option', 'com_categories.category|' . $component, JText::_("JCATEGORIES"));
+					$options[JText::_($component)][] = JHtml::_('select.option', 'com_categories.category|' . $component, JText::_($component . '_CATEGORIES'));
 				}
 			}
 		}
-
-		// Load menus component language file.
-		$lang->load('com_menus', JPATH_ADMINISTRATOR) || $lang->load('com_menus', JPATH_ADMINISTRATOR . '/components/com_menus');
-
-		// Add also the menus component to the list.
-		$options[JText::_("COM_MENUS_SUBMENU_MENUS")][] = JHtml::_('select.option', 'com_menus.item', JText::_("COM_MENUS_SUBMENU_ITEMS"));
 
 		// Sort by alpha order.
 		ksort($options, SORT_NATURAL);
