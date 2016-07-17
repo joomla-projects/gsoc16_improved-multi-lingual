@@ -32,44 +32,6 @@ if ($data['view'] instanceof AssociationsViewAssociations)
 			padding: 3px 0;
 		}
 	");
-
-	// This selectors doesn't have to activate the filter bar
-	unset($data['view']->activeFilters['component']);
-	unset($data['view']->activeFilters['language']);
-	
-	// Remove filters and ordering options depending on selected component.
-	if (is_null($data['view']->component) || is_null($data['view']->component->fields->published))
-	{
-		unset($data['view']->activeFilters['published']);
-		$data['view']->filterForm->removeField('published', 'filter');
-	}
-	if (is_null($data['view']->component) || is_null($data['view']->component->fields->catid))
-	{
-		unset($data['view']->activeFilters['category_id']);
-		$data['view']->filterForm->removeField('category_id', 'filter');
-	}
-	if (is_null($data['view']->component) || is_null($data['view']->component->fields->menutype))
-	{
-		unset($data['view']->activeFilters['menutype']);
-		$data['view']->filterForm->removeField('menutype', 'filter');
-	}
-	if (is_null($data['view']->component)
-		|| (is_null($data['view']->component->fields->catid) && !in_array($data['view']->component->component, array('com_categories', 'com_menus'))))
-	{
-		unset($data['view']->activeFilters['level']);
-		$data['view']->filterForm->removeField('level', 'filter');
-	}
-	if (is_null($data['view']->component) || is_null($data['view']->component->fields->access))
-	{
-		unset($data['view']->activeFilters['access']);
-		$data['view']->filterForm->removeField('access', 'filter');
-	}
-
-	// Add extension attribute to category filter.
-	if (!is_null($data['view']->component) && !is_null($data['view']->component->fields->catid))
-	{
-		$data['view']->filterForm->setFieldAttribute('category_id', 'extension', $data['view']->component->component, 'filter');
-	}
 }
 
 // Display the main joomla layout
