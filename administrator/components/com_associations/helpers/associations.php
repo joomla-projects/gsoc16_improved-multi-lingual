@@ -54,8 +54,8 @@ class AssociationsHelper extends JHelperContent
 			JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models');
 			$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
-			$properties->associationsContext = property_exists($model->get('name'), 'associationsContext') ? $model->get('associationsContext') : null;
-			$properties->typeAlias           = property_exists($model->get('name'), 'typeAlias') ? $model->get('typeAlias') : null;
+			$properties->associationsContext = $model->get('associationsContext');
+			$properties->typeAlias           = $model->get('typeAlias');
 
 			// Get the database table.
 			$model->addTablePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/tables');
