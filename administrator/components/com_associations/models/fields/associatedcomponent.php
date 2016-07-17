@@ -59,16 +59,20 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 				$itemName = ucfirst(basename($modelFile, '.php'));
 
 				JModelLegacy::addIncludePath($componentModelsPath);
-				$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
-				// Check if this model uses associations. Add component model option to select box if so.
-				if (property_exists($model->get('name'), 'associationsContext'))
+				if (class_exists($componentName . 'Model' . $itemName))
 				{
-					// Load component language file.
-					$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
+					$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
-					// Add componet option select box.
-					$options[JText::_($component)][] = JHtml::_('select.option', $model->get('typeAlias'), JText::_($component));
+					// Check if this model uses associations. Add component model option to select box if so.
+					if (property_exists($model->get('name'), 'associationsContext'))
+					{
+						// Load component language file.
+						$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
+
+						// Add componet option select box.
+						$options[JText::_($component)][] = JHtml::_('select.option', $model->get('typeAlias'), JText::_($component));
+					}
 				}
 			}
 
