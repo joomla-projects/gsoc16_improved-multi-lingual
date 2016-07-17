@@ -49,20 +49,18 @@ class AssociationsHelper extends JHelperContent
 			$properties->extension = isset($matches[4]) ? $matches[4] : null;
 
 			// Get the model properties.
-			$componentModelsPath = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models';
-			$componentTablesPath = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/tables';
-			$itemName            = ucfirst($properties->item);
-			$componentName       = ucfirst(substr($properties->component, 4));
+			$itemName      = ucfirst($properties->item);
+			$componentName = ucfirst(substr($properties->component, 4));
 
-			JModelLegacy::addIncludePath($componentModelsPath);
-			JTable::addIncludePath($componentTablesPath);
-
+			JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models');
 			$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
 			$properties->associationsContext = $model->get('associationsContext');
 			$properties->typeAlias           = $model->get('typeAlias');
 
 			// Get the database table.
+			JTable::addIncludePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/tables');
+
 			// Bug in menus table, it's loading an helper from relative path!!! @todo, solve later
 			if ($properties->component === 'com_menus')
 			{
