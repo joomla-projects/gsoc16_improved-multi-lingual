@@ -5,7 +5,7 @@
 		type="associatedcomponent"
 		label="COM_ASSOCIATIONS_COMPONENT_SELECTOR_LABEL"
 		description="COM_ASSOCIATIONS_COMPONENT_SELECTOR_DESC"
-		onchange="jQuery('select[id^=\'filter_\']').val('');this.form.submit();"
+		onchange="jQuery('select[id^=\'filter_\']').val('');jQuery('select[id^=\'list_\']').val('');this.form.submit();"
 		>
 		<option value="">COM_ASSOCIATIONS_FILTER_SELECT_ITEM_TYPE</option>
 	</field>
