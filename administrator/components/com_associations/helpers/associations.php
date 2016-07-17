@@ -48,36 +48,34 @@ class AssociationsHelper extends JHelperContent
 			$properties->item      = $matches[2];
 			$properties->extension = isset($matches[4]) ? $matches[4] : null;
 
-			// Categories component.
-			// @todo This need to be checked without harcoded.
-			if ($properties->component === 'com_categories' && !is_null($properties->extension))
+			// Get the model properties.
+			$componentModelsPath = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models';
+			$componentTablesPath = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/tables';
+			$itemName            = ucfirst($properties->item);
+			$componentName       = ucfirst(substr($properties->component, 4));
+
+			JModelLegacy::addIncludePath($componentModelsPath);
+			JTable::addIncludePath($componentTablesPath);
+
+			$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
+
+			$properties->associationsContext = $model->get('associationsContext');
+			$properties->typeAlias           = $model->get('typeAlias');
+
+			// Get the database table.
+			// Bug in menus table, it's loading an helper from relative path!!! @todo, solve later
+			if ($properties->component === 'com_menus')
 			{
-				$table = '#__categories';
+				$properties->table = '#__menu';
 			}
-			// Menus component.
-			elseif ($properties->component === 'com_menus')
-			{
-				$table = '#__menu';
-			}
-			// All other components.
 			else
 			{
-				// Get component item table.
-				$filePath = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models/' . $properties->item . '.php';
-				$file = file_get_contents($filePath);
-				if ($position = strpos($file, 'getAssociations'))
-				{
-					// Searching for , '#__table' , after getAssociations(.
-					$start = strpos($file, ',', $position) + 2;
-					$end = strpos($file, ',', $start) - 1;
-
-					$table = str_replace("'", "", substr($file, $start, $end - $start));
-				}
+				$table                           = $model->getTable();
+				$properties->table               = $table->get('_tbl');
 			}
 
-			// Save the table and get the table fields.
-			$properties->table       = $table;
-			$properties->tableFields = JFactory::getDbo()->getTableColumns($table);
+			// Get the table fields.
+			$properties->tableFields = JFactory::getDbo()->getTableColumns($properties->table);
 
 			// Component fields
 			// @todo This need should be checked hardcoding.
