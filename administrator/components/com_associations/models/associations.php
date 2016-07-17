@@ -166,7 +166,6 @@ class AssociationsModelAssociations extends JModelList
 			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'))
 				->select($db->quoteName('mt.title', 'menutype_title'))
 				->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
-
 		}
 
 		// If component supports access level, select the access level also.
