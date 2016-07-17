@@ -66,7 +66,7 @@ class AssociationsHelper extends JHelperContent
 			$properties->table = $table->get('_tbl');
 
 			// Get the table fields.
-			$properties->tableFields = JFactory::getDbo()->getTableColumns($properties->table);
+			$properties->tableFields = $table->getFields();
 
 			// Component fields
 			// @todo This need should be checked hardcoding.
