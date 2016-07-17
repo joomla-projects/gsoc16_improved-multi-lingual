@@ -84,6 +84,26 @@ class AssociationsHelper extends JHelperContent
 			$properties->fields->published = isset($properties->tableFields['published']) ? 'published' : null;
 			$properties->fields->published = isset($properties->tableFields['state']) ? 'state' : $properties->fields->published;
 
+			// Disallow ordering according to component.
+			$properties->excludeOrdering = array();
+
+			if (is_null($properties->fields->catid))
+			{
+				array_push($properties->excludeOrdering, 'category_title');
+			}
+			if (is_null($properties->fields->menutype))
+			{
+				array_push($properties->excludeOrdering, 'menutype_title');
+			}
+			if (is_null($properties->fields->access))
+			{
+				array_push($properties->excludeOrdering, 'access_level');
+			}
+			if (is_null($properties->fields->ordering))
+			{
+				array_push($properties->excludeOrdering, 'ordering');
+			}
+
 			// Association column key
 			// @todo This need to be checked hardcoding.
 			if ($properties->component == 'com_content')
