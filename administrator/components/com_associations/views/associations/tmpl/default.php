@@ -112,7 +112,7 @@ $iconStates = array(
 					</td>
 					<td>
 						<?php if ($item->association) : ?>
-							<?php echo JHtml::_($this->component->associationKey, $item->id); ?>
+							<?php echo JHtml::_($this->component->associationKey, $item->id, $this->component->extension); ?>
 						<?php endif; ?>
 					</td>
 					<?php if (!is_null($this->component->fields->menutype)) : ?>
