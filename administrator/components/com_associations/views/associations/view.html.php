@@ -78,6 +78,54 @@ class AssociationsViewAssociations extends JViewLegacy
 		else
 		{
 			$this->component  = AssociationsHelper::getComponentProperties($this->state->get('component'));
+
+			// Dynamic filter form.
+			// This selectors doesn't have to activate the filter bar.
+			unset($this->activeFilters['component']);
+			unset($this->activeFilters['language']);
+			
+			// Remove filters options depending on selected component.
+			if (is_null($this->component) || is_null($this->component->fields->published))
+			{
+				unset($this->activeFilters['published']);
+				$this->filterForm->removeField('published', 'filter');
+			}
+			if (is_null($this->component) || is_null($this->component->fields->catid))
+			{
+				unset($this->activeFilters['category_id']);
+				$this->filterForm->removeField('category_id', 'filter');
+			}
+			if (is_null($this->component) || is_null($this->component->fields->menutype))
+			{
+				unset($this->activeFilters['menutype']);
+				$this->filterForm->removeField('menutype', 'filter');
+			}
+			if (is_null($this->component)
+				|| (is_null($this->component->fields->catid) && !in_array($this->component->component, array('com_categories', 'com_menus'))))
+			{
+				unset($this->activeFilters['level']);
+				$this->filterForm->removeField('level', 'filter');
+			}
+			if (is_null($this->component) || is_null($this->component->fields->access))
+			{
+				unset($this->activeFilters['access']);
+				$this->filterForm->removeField('access', 'filter');
+			}
+
+			// Add extension attribute to category filter.
+			if (!is_null($this->component) && !is_null($this->component->fields->catid))
+			{
+				$this->filterForm->setFieldAttribute('category_id', 'extension', $this->component->component, 'filter');
+			}
+	
+			// Only allow ordering by what the component allows.
+			if (in_array($this->state->get('list.ordering', 'ordering'), $this->component->excludeOrdering))
+			{
+				$this->state->set('list.ordering', 'ordering');
+				$this->state->set('list.direction', 'ASC');
+				$this->filterForm->setValue('fullordering', 'list', 'ordering ASC');
+			}
+
 			$this->items      = $this->get('Items');
 			$this->pagination = $this->get('Pagination');
 
