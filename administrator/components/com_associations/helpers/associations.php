@@ -48,28 +48,28 @@ class AssociationsHelper extends JHelperContent
 			$properties->item      = $matches[2];
 			$properties->extension = isset($matches[4]) ? $matches[4] : null;
 
-			// Get the model properties.
-			$itemName      = ucfirst($properties->item);
-			$componentName = ucfirst(substr($properties->component, 4));
-
-			JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models');
-			$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
-
-			$properties->associationsContext = $model->get('associationsContext');
-			$properties->typeAlias           = $model->get('typeAlias');
-
-			// Get the database table.
-			JTable::addIncludePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/tables');
-
-			// Bug in menus table, it's loading an helper from relative path!!! @todo, solve later
+			// Bug in menu item model! it's loading an helper from relative path!!! @todo, we hardcode for now. to solve later
 			if ($properties->component === 'com_menus')
 			{
-				$properties->table = '#__menu';
+				$properties->associationsContext = 'com_menus.item';
+				$properties->typeAlias           = 'com_menus.item';
+				$properties->table               = '#__menu';
 			}
 			else
 			{
-				$table                           = $model->getTable();
-				$properties->table               = $table->get('_tbl');
+				// Get the model properties.
+				$itemName      = ucfirst($properties->item);
+				$componentName = ucfirst(substr($properties->component, 4));
+				JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models');
+				$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
+
+				$properties->associationsContext = property_exists($model->get('name'), 'associationsContext') ? $model->get('associationsContext') : null;
+				$properties->typeAlias           = property_exists($model->get('name'), 'typeAlias') ? $model->get('typeAlias') : null;
+
+				// Get the database table.
+				$model->addTablePath(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/tables');
+				$table             = $model->getTable();
+				$properties->table = $table->get('_tbl');
 			}
 
 			// Get the table fields.
