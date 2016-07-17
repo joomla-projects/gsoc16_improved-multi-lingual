@@ -38,7 +38,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 	{
 		$lang              = JFactory::getLanguage();
 		$options           = array();
-		$excludeComponents = array('com_categories', 'com_menus', 'com_config');
+		$excludeComponents = array('com_categories', 'com_menus', 'com_config', 'com_admin', 'com_users');
 		$typeAliasList     = array();
 
 		// Get all admin components.
