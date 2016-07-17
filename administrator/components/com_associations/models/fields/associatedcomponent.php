@@ -65,7 +65,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 					$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
 					// Check if this model uses associations. Add component model option to select box if so.
-					if (property_exists($model->get('name'), 'associationsContext'))
+					if ($model->get('associationsContext'))
 					{
 						// Load component language file.
 						$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
