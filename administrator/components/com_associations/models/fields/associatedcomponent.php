@@ -59,7 +59,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			{
 				$itemName = ucfirst(basename($modelFile, '.php'));
 
-				JModelLegacy::addIncludePath($componentModelsPath, $itemName . 'Model');
+				JLoader::register($componentName . 'Model' . $itemName, $modelFile);
 				$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
 				// Check if this model uses associations.
