@@ -61,7 +61,7 @@ $iconStates = array(
 					</th>
 					<?php if (!is_null($this->component->fields->menutype)) : ?>
 						<th width="10%" class="nowrap">
-							<?php echo JHtml::_('searchtools.sort', 'COM_ASSOCIATIONS_HEADING_MENU', 'menutype_title', $listDirn, $listOrder); $colSpan++; ?>
+							<?php echo JHtml::_('searchtools.sort', 'COM_ASSOCIATIONS_HEADING_MENUTYPE', 'menutype_title', $listDirn, $listOrder); $colSpan++; ?>
 						</th>
 					<?php endif; ?>
 					<?php if (!is_null($this->component->fields->access)) : ?>
