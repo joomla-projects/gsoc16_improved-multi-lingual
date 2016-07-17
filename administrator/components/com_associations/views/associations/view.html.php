@@ -116,8 +116,8 @@ class AssociationsViewAssociations extends JViewLegacy
 
 			if (isset($aComponent) && isset($aView))
 			{
-				$this->link = 'index.php?option=com_associations&view=association&layout=edit&acomponent='
-				. $aComponent . '&aview=' . $aView . '&id=';
+				$this->link = 'index.php?option=com_associations&view=association&layout=edit&forcedlanguage='
+				. $this->state->get('associationlanguage') . '&acomponent='	. $aComponent . '&aview=' . $aView . '&id=';
 			}
 
 		}

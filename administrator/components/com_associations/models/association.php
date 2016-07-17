@@ -16,5 +16,27 @@ defined('_JEXEC') or die;
  */
 class AssociationsModelAssociation extends JModelList
 {
-
+	/**
+	 * Method to get the record form.
+	 *
+	 * @param   array    $data      Data for the form.
+	 * @param   boolean  $loadData  True if the form is to load its own data (default case), false if not.
+	 *
+	 * @return  mixed  A JForm object on success, false on failure
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function getForm($data = array(), $loadData = true)
+	{
+		// Get the form.
+		$form = $this->loadForm('com_associations.association', 'association', array('control' => 'jform', 'load_data' => $loadData));
+		if (empty($form))
+		{
+			return false;
+		}
+		else
+		{
+			return $form;
+		}
+	}
 }
