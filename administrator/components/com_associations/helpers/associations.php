@@ -104,28 +104,35 @@ class AssociationsHelper extends JHelperContent
 				array_push($properties->excludeOrdering, 'ordering');
 			}
 
-			// Association column key
-			// @todo This need to be checked hardcoding.
-			if ($properties->component == 'com_content')
+			// Association JHtml call.
+			$properties->associationKey = $properties->item . '.association';
+
+			foreach (glob(JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/helpers/html/*.php', GLOB_NOSORT) as $htmlHelperFile)
 			{
-				$properties->associationKey = 'contentadministrator.association';
-			}
-			elseif ($properties->component == 'com_categories')
-			{
-				$properties->associationKey = 'categoriesadministrator.association';
-			}
-			elseif ($properties->component == 'com_menus')
-			{
-				$properties->associationKey = 'MenusHtml.Menus.association';
-			}
-			else
-			{
-				$properties->associationKey = $properties->item . '.association';
+				// Using JHtml Override.
+				$className = 'JHtml' . ucfirst(basename($htmlHelperFile, '.php'));
+				JLoader::register($className, $htmlHelperFile);
+
+				if (class_exists($className) && method_exists($className, 'association'))
+				{
+					$properties->associationKey = str_replace('JHtml', '', $className) . '.association';
+				}
+
+				// Using Legacy (ex: com_menus)
+				else
+				{
+					$className = ucfirst(substr($properties->component, 4)) . 'Html' . ucfirst(basename($htmlHelperFile, '.php'));
+					JLoader::register($className, $htmlHelperFile);
+
+					if (class_exists($className) && method_exists($className, 'association'))
+					{
+						$properties->associationKey = str_replace('Html', 'Html.', $className) . '.association';
+					}
+				}
 			}
 
 			// Asset column key.
-			// @todo This need to be confirmed.
-			$properties->assetKey = $properties->component . '.' . $properties->item;
+			$properties->assetKey = $properties->typeAlias;
 		}
 
 		return $properties;
