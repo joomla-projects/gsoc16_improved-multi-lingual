@@ -52,7 +52,9 @@ class AssociationsHelper extends JHelperContent
 			$itemName      = ucfirst($properties->item);
 			$componentName = ucfirst(substr($properties->component, 4));
 
-			JLoader::register($componentName . 'Model' . $itemName, JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models/' . $properties->item . '.php');
+			$modelsPath    = JPATH_ADMINISTRATOR . '/components/' . $properties->component . '/models';
+
+			JLoader::register($componentName . 'Model' . $itemName, $modelsPath . '/' . $properties->item . '.php');
 			$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
 			$properties->associationsContext = $model->get('associationsContext');
