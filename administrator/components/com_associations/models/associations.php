@@ -258,13 +258,6 @@ class AssociationsModelAssociations extends JModelList
 			}
 		}
 
-		// Only allow ordering by what the component allows.
-		if (in_array($this->getState('list.ordering', 'ordering'), $component->excludeOrdering))
-		{
-			$this->setState('list.ordering', 'ordering');
-			$this->setState('list.direction', 'asc');
-		}
-
 		// Add the list ordering clause.
 		$query->order($db->escape($this->getState('list.ordering', 'ordering')) . ' ' . $db->escape($this->getState('list.direction', 'asc')));
 
