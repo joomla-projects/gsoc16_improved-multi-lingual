@@ -81,8 +81,8 @@ class AssociationsHelper extends JHelperContent
 			$properties->fields->catid     = isset($properties->tableFields['catid']) ? 'catid' : null;
 			$properties->fields->language  = isset($properties->tableFields['language']) ? 'language' : null;
 			$properties->fields->access    = isset($properties->tableFields['access']) ? 'access' : null;
-			$properties->fields->published = isset($properties->tableFields['published']) ? 'published' : null;
-			$properties->fields->published = isset($properties->tableFields['state']) ? 'state' : $properties->fields->published;
+			$properties->fields->published = isset($properties->tableFields['state']) ? 'state' : null;
+			$properties->fields->published = isset($properties->tableFields['published']) ? 'published' : $properties->fields->published;
 
 			// Disallow ordering according to component.
 			$properties->excludeOrdering = array();
