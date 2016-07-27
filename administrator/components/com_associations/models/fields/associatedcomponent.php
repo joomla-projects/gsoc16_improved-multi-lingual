@@ -36,7 +36,6 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 	 */
 	protected function getGroups()
 	{
-		$lang              = JFactory::getLanguage();
 		$options           = array();
 		$typeAliasList     = array();
 		$excludeComponents = array(
@@ -69,7 +68,6 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 		foreach (glob(JPATH_ADMINISTRATOR . '/components/*', GLOB_NOSORT | GLOB_ONLYDIR) as $componentAdminPath)
 		{
 			$component           = basename($componentAdminPath);
-			$componentName       = ucfirst(substr($component, 4));
 			$componentModelsPath = $componentAdminPath . '/models';
 
 			// Only components that exist also in the site client, aren't in the excluded components array and have models.
@@ -81,38 +79,25 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			// Check if component uses associations, by checking is models.
 			foreach (glob($componentModelsPath . '/*.php', GLOB_NOSORT) as $modelFile)
 			{
-				$itemName = ucfirst(basename($modelFile, '.php'));
+				$cp = AssociationsHelper::getComponentProperties($component . '.' . strtolower(basename($modelFile, '.php')));
 
-				JLoader::register($componentName . 'Model' . $itemName, $modelFile);
-				$model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
-
-				// Check if this model uses associations.
-				if ($model && $model->get('associationsContext') && $model->get('typeAlias') && !in_array($model->get('typeAlias'), $typeAliasList))
+				// Check if component supports associations.
+				if ($cp->associations->support && $cp->associations->supportItem && !in_array($cp->typeAlias, $typeAliasList))
 				{
-					// Load component language file.
-					$lang->load($component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($component . '.sys', $componentAdminPath);
-					$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
-
 					// Add component option select box.
-					$options[JText::_($component)][] = JHtml::_('select.option', $model->get('typeAlias'), JText::_($component));
+					$options[$cp->title][] = JHtml::_('select.option', $cp->typeAlias, $cp->title);
 
-					array_push($typeAliasList, $model->get('typeAlias'));
+					array_push($typeAliasList, $cp->typeAlias);
 				}
 			}
 
 			// Check if component uses categories with associations. Add category option to select box if so.
-			if (file_exists(JPATH_SITE . '/components/' . $component . '/helpers/association.php'))
+			$cp = AssociationsHelper::getComponentProperties($component);
+
+			// Check if component uses categories with associations. Add category option to select box if so.
+			if ($cp->associations->supportCategories)
 			{
-				JLoader::register($componentName . 'HelperAssociation', JPATH_SITE . '/components/' . $component . '/helpers/association.php');
-
-				if (method_exists($componentName . 'HelperAssociation', 'getCategoryAssociations'))
-				{
-					// Load component language file.
-					$lang->load($component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($component . '.sys', $componentAdminPath);
-					$lang->load($component, JPATH_ADMINISTRATOR) || $lang->load($component, $componentAdminPath);
-
-					$options[JText::_($component)][] = JHtml::_('select.option', 'com_categories.category|' . $component, JText::_($component . '_CATEGORIES'));
-				}
+				$options[$cp->title][] = JHtml::_('select.option', 'com_categories.category|' . $cp->component, JText::_($cp->component . '_CATEGORIES'));
 			}
 		}
 
