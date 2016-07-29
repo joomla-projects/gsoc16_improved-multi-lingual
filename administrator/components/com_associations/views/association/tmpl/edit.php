@@ -22,16 +22,44 @@ $this->app->getDocument()->addScriptDeclaration("
 			//The field needs to be re-enabled or the language field won't be saved
 			jQuery('#target-association').contents().find('#jform_language').attr('disabled', false);
 
+			target = jQuery('#target-association').contents();
+			selectedLang = jQuery('#jform_itemlanguage').val();
+			split = selectedLang.split('|');
+			langAssociation = split[0].replace('-','_');
+
+			langID = " . $this->referenceId . ";
+			referenceLanguage = '" . str_replace("-", "_", $this->referenceLanguage) . "';
+			target.find('#jform_associations_' + referenceLanguage + '_chzn').remove();
+			target.find('#jform_associations_' + referenceLanguage).val(langID).chosen().change();
+
+			//Storing existing associations on target
+			jQuery('#jform_itemlanguage option').each(function()
+			{
+				split = jQuery(this).val().split('|');
+				if (typeof split[1] !== 'undefined' && split[1] !== '0') {
+					langAssociation = split[0].replace('-','_');
+					langID = split[1];
+
+					target.find('#jform_associations_' + langAssociation + '_chzn').remove();
+					target.find('#jform_associations_' + langAssociation).val(langID).chosen().change();
+				}
+			});
+
 			window.frames['target-association'].Joomla.submitbutton('" . $this->associatedView . ".apply');
 
 			//Will only execute this AFTER save to get the ID in case it's a new item
 			jQuery('#target-association').load(function () {
-				target = jQuery('#reference-association').contents();
+				reference = jQuery('#reference-association').contents();
 				selectedLang = jQuery('#jform_itemlanguage').val();
 				split = selectedLang.split('|');
 				langAssociation = split[0].replace('-','_');
 				langID = jQuery(this).contents().find('#jform_id').val();
-				target.find('#jform_associations_' + langAssociation + '_id').val(langID);
+				reference.find('#jform_associations_' + langAssociation + '_id').val(langID);
+				reference.find('#jform_associations_' + langAssociation + '_chzn').remove();
+				title = jQuery(this).contents().find('#jform_title').val();
+				referenceAssoc = reference.find('#jform_associations_' + langAssociation);
+				referenceAssoc.append('<option value=\"'+ langID + '\">' + title + '</option>');
+				referenceAssoc.val(langID).chosen().change();
 
 				//Updating language selector when a new item is saved
 				if (split[1] == '0') {
@@ -101,13 +129,9 @@ $this->app->getDocument()->addScriptDeclaration("
 			//Hide associations tab
 			target.find('a[href=#associations]').parent().hide();
 
-			langAssociation = '" . str_replace('-', '_', $this->referenceLanguage) . "';
-			langID = " . $this->referenceId . ";
-			target.find('#jform_associations_' + langAssociation + '_id').val(langID);
-
 			split = selectedLang.split('|');
 
-			if (typeof split[1] !== undefined) {
+			if (typeof split[1] !== 'undefined') {
 				selectedLang = split[0];
 
 				//Adding checkin IDs to an hidden input
@@ -127,17 +151,6 @@ $this->app->getDocument()->addScriptDeclaration("
 			// Disable target fields.
 			target.find('#jform_language_chzn').remove();
 			target.find('#jform_language').attr('disabled', true).chosen();
-
-			//Storing existing associations on target
-			$('#jform_itemlanguage option').each(function()
-			{
-				split = $(this).val().split('|');
-				if (typeof split[1] !== 'undefined' && split[1] !== '0') {
-					langAssociation = split[0].replace('-','_');
-					langID = split[1];
-					target.find('#jform_associations_' + langAssociation + '_id').val(langID);
-				}
-			});
 
 			// Iframe load finished, hide Joomla loading layer.
 			Joomla.loadingLayer('hide');
