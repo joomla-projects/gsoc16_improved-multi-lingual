@@ -54,7 +54,7 @@ class JFormFieldMenuParent extends JFormFieldList
 		}
 
 		// Filter by client id.
-		if ($clientId = $this->getAttribute('clientid'));
+		if ($clientId = $this->getAttribute('clientid'))
 		{
 			$query->where($db->quoteName('a.client_id') . ' = ' . (int) $clientId);
 		}
