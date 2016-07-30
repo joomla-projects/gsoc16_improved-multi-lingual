@@ -219,8 +219,12 @@ class MenusViewItems extends JViewLegacy
 
 		$this->f_levels = $options;
 
-		$this->addToolbar();
-		$this->sidebar = JHtmlSidebar::render();
+		// We don't need toolbar in the modal window.
+		if ($this->getLayout() !== 'modal')
+		{
+			$this->addToolbar();
+			$this->sidebar = JHtmlSidebar::render();
+		}
 
 		// Allow a system plugin to insert dynamic menu types to the list shown in menus:
 		JEventDispatcher::getInstance()->trigger('onBeforeRenderMenuItems', array($this));
