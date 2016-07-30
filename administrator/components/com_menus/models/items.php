@@ -149,6 +149,12 @@ class MenusModelItems extends JModelList
 
 		// List state information.
 		parent::populateState('a.lft', 'asc');
+
+		// Force a language.
+		if (!empty($forcedLanguage))
+		{
+			$this->setState('filter.language', $forcedLanguage);
+		}
 	}
 
 	/**
