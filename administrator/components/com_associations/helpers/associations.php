@@ -96,13 +96,6 @@ class AssociationsHelper extends JHelperContent
 				$cp[$key]->associations->gethelper->file   = $cp[$key]->adminPath . '/helpers/menus.php';
 				$cp[$key]->associations->gethelper->method = 'getAssociations';
 			}
-			// Special for com_categories as helper is in back-end
-			elseif ($cp[$key]->component === 'com_categories')
-			{
-				$cp[$key]->associations->gethelper->class  = 'CategoriesHelper';
-				$cp[$key]->associations->gethelper->file   = $cp[$key]->adminPath . '/helpers/categories.php';
-				$cp[$key]->associations->gethelper->method = 'getAssociations';
-			}
 
 			// If association get items helper class does not exists, component does not support associations.
 			if (!isset($cp[$key]->associations->gethelper->class))
