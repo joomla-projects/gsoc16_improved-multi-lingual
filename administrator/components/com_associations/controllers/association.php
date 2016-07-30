@@ -27,29 +27,25 @@ class AssociationsControllerAssociation extends JControllerForm
 	 */
 	public function cancel($key = null)
 	{
-		$component = $this->input->get('acomponent', '', 'string');
-		$view      = $this->input->get('aview', '', 'string');
 		$extension = $this->input->get('extension', '', 'string');
-		$refID     = $this->input->get('id', '', 'int');
-		$targetID  = $this->input->get('target-id', '', 'string');
 
-		$getCP = $extension != '' ? ('com_categories.category|' . $extension) : ($component . '.' . $view);
+		$key = $extension !== '' ? 'com_categories.category|' . $extension : $this->input->get('acomponent', '') . '.' . $this->input->get('aview', '');
+		$cp  = AssociationsHelper::getComponentProperties($key);
 
-		$checkOutComponent = AssociationsHelper::getComponentProperties($getCP);
-
-		if (!is_null($checkOutComponent->fields->checked_out))
+		// Only check in, if component allows to check out.
+		if (!is_null($cp->fields->checked_out))
 		{
-			$split = array_unique(explode(",", $targetID));
+			// Check-in reference id.
+			$cp->table->checkin($this->input->get('id', null, 'int'));
 
-			// Always check-in reference id
-			$checkOutComponent->table->checkin($refID);
-
-			if ($targetID != '')
+			// Check-in all ithe target ids (can be several, one for each language).
+			if ($targetsId = $this->input->get('target-id', '', 'string'))
 			{
-				$checkOutComponent->table->checkin($targetID);
-				foreach ($split as $key => $id)
+				$targetsId = array_unique(explode(',', $targetsId));
+
+				foreach ($targetsId as $key => $targetId)
 				{
-					$checkOutComponent->table->checkin(intval($id));
+					$cp->table->checkin((int) $targetId);
 				}
 			}
 		}
