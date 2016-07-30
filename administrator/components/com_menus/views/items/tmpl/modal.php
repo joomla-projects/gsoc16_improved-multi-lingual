@@ -24,6 +24,13 @@ $app = JFactory::getApplication();
 $function  = $app->input->getCmd('function', 'jSelectMenuItem');
 $listOrder = $this->escape($this->state->get('list.ordering'));
 $listDirn  = $this->escape($this->state->get('list.direction'));
+
+$iconStates = array(
+	-2 => 'icon-trash',
+	0 => 'icon-unpublish',
+	1 => 'icon-publish',
+	2 => 'icon-archive',
+);
 ?>
 <div class="container-popup">
 
@@ -38,19 +45,24 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 		<?php else : ?>
 			<table class="table table-striped table-condensed">
 				<thead>
-				<?php // @todo Neeeds the same columns as normla view ?>
 					<tr>
 						<th width="1%" class="nowrap center">
 							<?php echo JHtml::_('searchtools.sort', 'JSTATUS', 'a.published', $listDirn, $listOrder); ?>
 						</th>
-						<th class="nowrap title">
-							<?php echo JHtml::_('searchtools.sort', 'JGLOBAL_TITLE', 'a.name', $listDirn, $listOrder); ?>
+						<th class="title">
+							<?php echo JHtml::_('searchtools.sort', 'JGLOBAL_TITLE', 'a.title', $listDirn, $listOrder); ?>
+						</th>
+						<th class="nowrap hidden-phone">
+							<?php echo JHtml::_('searchtools.sort', 'COM_MENUS_HEADING_MENU', 'menutype_title', $listDirn, $listOrder); ?>
+						</th>
+						<th width="5%" class="center nowrap hidden-phone">
+							<?php echo JHtml::_('searchtools.sort', 'COM_MENUS_HEADING_HOME', 'a.home', $listDirn, $listOrder); ?>
+						</th>
+						<th width="10%" class="nowrap hidden-phone">
+							<?php echo JHtml::_('searchtools.sort',  'JGRID_HEADING_ACCESS', 'a.access', $listDirn, $listOrder); ?>
 						</th>
 						<th width="15%" class="nowrap hidden-phone">
-							<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_ACCESS', 'access_level', $listDirn, $listOrder); ?>
-						</th>
-						<th width="15%" class="nowrap hidden-phone">
-							<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_LANGUAGE', 'language_title', $listDirn, $listOrder); ?>
+							<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_LANGUAGE', 'language', $listDirn, $listOrder); ?>
 						</th>
 						<th width="1%" class="nowrap hidden-phone">
 							<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
@@ -59,21 +71,12 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 				</thead>
 				<tfoot>
 					<tr>
-						<td colspan="5">
+						<td colspan="7">
 							<?php echo $this->pagination->getListFooter(); ?>
 						</td>
 					</tr>
 				</tfoot>
 				<tbody>
-				<?php // @todo Neeeds the same columns as normla view ?>
-				<?php
-				$iconStates = array(
-					-2 => 'icon-trash',
-					0 => 'icon-unpublish',
-					1 => 'icon-publish',
-					2 => 'icon-archive',
-				);
-				?>
 				<?php foreach ($this->items as $i => $item) : ?>
 					<?php if ($item->language && JLanguageMultilang::isEnabled())
 					{
@@ -100,24 +103,57 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 							<span class="<?php echo $iconStates[$this->escape($item->published)]; ?>"></span>
 						</td>
 						<td>
-							<a href="javascript:void(0)" onclick="if (window.parent) window.parent.<?php echo $this->escape($function);?>('<?php echo $item->id; ?>', '<?php echo $this->escape(addslashes($item->name)); ?>', '<?php echo $this->escape($item->catid); ?>', null, '<?php echo $this->escape(NewsfeedsHelperRoute::getNewsfeedRoute($item->id, $item->catid, $item->language)); ?>', '<?php echo $this->escape($lang); ?>', null);">
-							<?php echo $this->escape($item->name); ?></a>
-							<div class="small">
-								<?php echo JText::_('JCATEGORY') . ": " . $this->escape($item->category_title); ?>
+							<?php $prefix = JLayoutHelper::render('joomla.html.treeprefix', array('level' => $item->level)); ?>
+							<?php echo $prefix; ?>
+							<?php // @todo onclick function. ?>
+							<a href="javascript:void(0)" onclick="">
+							<?php echo $this->escape($item->title); ?></a>
+							<span class="small">
+							<?php if ($item->type != 'url') : ?>
+								<?php if (empty($item->note)) : ?>
+									<?php echo JText::sprintf('JGLOBAL_LIST_ALIAS', $this->escape($item->alias));?>
+								<?php else : ?>
+									<?php echo JText::sprintf('JGLOBAL_LIST_ALIAS_NOTE', $this->escape($item->alias), $this->escape($item->note));?>
+								<?php endif; ?>
+							<?php elseif ($item->type == 'url' && $item->note) : ?>
+								<?php echo JText::sprintf('JGLOBAL_LIST_NOTE', $this->escape($item->note));?>
+							<?php endif; ?>
+							</span>
+							<div title="<?php echo $this->escape($item->path); ?>">
+								<?php echo $prefix; ?>
+								<span class="small"  title="<?php echo isset($item->item_type_desc) ? htmlspecialchars($this->escape($item->item_type_desc), ENT_COMPAT, 'UTF-8') : ''; ?>">
+									<?php echo $this->escape($item->item_type); ?></span>
 							</div>
+						</td>
+						<td class="small hidden-phone">
+							<?php echo $this->escape($item->menutype_title); ?>
+						</td>
+						<td class="center hidden-phone">
+							
+							<?php if ($item->type == 'component') : ?>
+								<?php if ($item->language == '*' || $item->home == '0') : ?>
+									<?php echo JHtml::_('jgrid.isdefault', $item->home, $i, 'items.', ($item->language != '*' || !$item->home) && 0); ?>
+								<?php else : ?>
+									<?php echo JHtml::_('image', 'mod_languages/' . $item->language_image . '.gif', $item->language_title, array('title' => $item->language_title), true); ?>
+								<?php endif; ?>
+							<?php endif; ?>
 						</td>
 						<td class="small hidden-phone">
 							<?php echo $this->escape($item->access_level); ?>
 						</td>
 						<td class="small hidden-phone">
-							<?php if ($item->language == '*'):?>
+							<?php if ($item->language == ''):?>
+								<?php echo JText::_('JDEFAULT'); ?>
+							<?php elseif ($item->language == '*') : ?>
 								<?php echo JText::alt('JALL', 'language'); ?>
-							<?php else:?>
+							<?php else : ?>
 								<?php echo $item->language_title ? JHtml::_('image', 'mod_languages/' . $item->language_image . '.gif', $item->language_title, array('title' => $item->language_title), true) . '&nbsp;' . $this->escape($item->language_title) : JText::_('JUNDEFINED'); ?>
-							<?php endif;?>
+							<?php endif; ?>
 						</td>
 						<td class="hidden-phone">
-							<?php echo (int) $item->id; ?>
+							<span title="<?php echo sprintf('%d-%d', $item->lft, $item->rgt); ?>">
+								<?php echo (int) $item->id; ?>
+							</span>
 						</td>
 					</tr>
 				<?php endforeach; ?>
