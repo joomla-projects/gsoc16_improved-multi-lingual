@@ -29,12 +29,6 @@ JHtml::_('bootstrap.tooltip', '#filter_search', array('title' => JText::_($searc
 $function     = $app->input->get('function', 'jSelectMenuItem', 'cmd');
 $listOrder    = $this->escape($this->state->get('list.ordering'));
 $listDirn     = $this->escape($this->state->get('list.direction'));
-$iconStates   = array(
-	-2 => 'icon-trash',
-	0  => 'icon-unpublish',
-	1  => 'icon-publish',
-	2  => 'icon-archive',
-);
 
 $app->getDocument()->addScriptDeclaration("
 jQuery(document).ready(function($) {
@@ -95,7 +89,7 @@ jQuery(document).ready(function($) {
 				<?php foreach ($this->items as $i => $item) : ?>
 					<tr class="row<?php echo $i % 2; ?>">
 						<td class="center">
-							<span class="<?php echo $iconStates[$this->escape($item->published)]; ?>"></span>
+							<?php echo JHtml::_('MenusHtml.Menus.state', $item->published, $i, 0); ?>
 						</td>
 						<td>
 							<?php $prefix = JLayoutHelper::render('joomla.html.treeprefix', array('level' => $item->level)); ?>
