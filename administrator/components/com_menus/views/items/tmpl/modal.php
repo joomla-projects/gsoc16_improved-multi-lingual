@@ -26,11 +26,9 @@ JHtml::_('formbehavior.chosen', 'select');
 $searchFilterDesc = $this->filterForm->getFieldAttribute('search', 'description', null, 'filter');
 JHtml::_('bootstrap.tooltip', '#filter_search', array('title' => JText::_($searchFilterDesc), 'placement' => 'bottom'));
 
-
 $function     = $app->input->get('function', 'jSelectMenuItem', 'cmd');
 $listOrder    = $this->escape($this->state->get('list.ordering'));
 $listDirn     = $this->escape($this->state->get('list.direction'));
-$multilingual = JLanguageMultilang::isEnabled();
 $iconStates   = array(
 	-2 => 'icon-trash',
 	0  => 'icon-unpublish',
