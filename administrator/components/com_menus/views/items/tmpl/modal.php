@@ -9,7 +9,12 @@
 
 defined('_JEXEC') or die;
 
-JSession::checkToken() or die(JText::_('JINVALID_TOKEN'));
+$app = JFactory::getApplication();
+
+if ($app->isSite())
+{
+	JSession::checkToken() or die(JText::_('JINVALID_TOKEN'));
+}
 
 JHtml::addIncludePath(JPATH_COMPONENT . '/helpers/html');
 
@@ -21,7 +26,7 @@ JHtml::_('formbehavior.chosen', 'select');
 $searchFilterDesc = $this->filterForm->getFieldAttribute('search', 'description', null, 'filter');
 JHtml::_('bootstrap.tooltip', '#filter_search', array('title' => JText::_($searchFilterDesc), 'placement' => 'bottom'));
 
-$app          = JFactory::getApplication();
+
 $function     = $app->input->get('function', 'jSelectMenuItem', 'cmd');
 $listOrder    = $this->escape($this->state->get('list.ordering'));
 $listDirn     = $this->escape($this->state->get('list.direction'));
@@ -36,7 +41,8 @@ $iconStates   = array(
 $app->getDocument()->addScriptDeclaration("
 jQuery(document).ready(function($) {
 	$('body').on('click', '.select-link', function() {
-		if (window.parent)
+		// Run function on parent window.
+		if(self != top)
 		{
 			window.parent." . $function . "(this.getAttribute('data-id'), this.getAttribute('data-title'), null, null, this.getAttribute('data-uri'), this.getAttribute('data-language'), null);
 		}
@@ -45,7 +51,7 @@ jQuery(document).ready(function($) {
 ?>
 <div class="container-popup">
 
-	<form action="<?php echo JRoute::_('index.php?option=com_menus&view=items&layout=modal&tmpl=component&function=' . $function); ?>" method="post" name="adminForm" id="adminForm" class="form-inline">
+	<form action="<?php echo JRoute::_('index.php?option=com_menus&view=items&layout=modal&tmpl=component'); ?>" method="post" name="adminForm" id="adminForm" class="form-inline">
 
 		<?php echo JLayoutHelper::render('joomla.searchtools.default', array('view' => $this)); ?>
 
@@ -101,7 +107,7 @@ jQuery(document).ready(function($) {
 								data-id="<?php echo $item->id; ?>"
 								data-title="<?php echo $this->escape(addslashes($item->title)); ?>"
 								data-uri="<?php echo $this->escape(JRoute::_('index.php?Itemid=' . $item->id)); ?>"
-								data-language="<?php echo $item->language; ?>">
+								data-language="<?php echo $this->escape($item->language); ?>">
 								<?php echo $this->escape($item->title); ?></a>
 							<span class="small">
 							<?php if ($item->type != 'url') : ?>
@@ -158,6 +164,7 @@ jQuery(document).ready(function($) {
 
 		<input type="hidden" name="task" value="" />
 		<input type="hidden" name="boxchecked" value="0" />
+		<input type="hidden" name="function" value="<?php echo $function; ?>" />
 		<input type="hidden" name="forcedLanguage" value="<?php echo $app->input->get('forcedLanguage', '', 'cmd'); ?>" />
 		<?php echo JHtml::_('form.token'); ?>
 
