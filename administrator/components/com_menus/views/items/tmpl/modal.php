@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die;
 
+JSession::checkToken() or die(JText::_('JINVALID_TOKEN'));
+
 JHtml::addIncludePath(JPATH_COMPONENT . '/helpers/html');
 
 JHtml::_('behavior.core');
@@ -19,22 +21,31 @@ JHtml::_('formbehavior.chosen', 'select');
 $searchFilterDesc = $this->filterForm->getFieldAttribute('search', 'description', null, 'filter');
 JHtml::_('bootstrap.tooltip', '#filter_search', array('title' => JText::_($searchFilterDesc), 'placement' => 'bottom'));
 
-$app = JFactory::getApplication();
-
-$function  = $app->input->getCmd('function', 'jSelectMenuItem');
-$listOrder = $this->escape($this->state->get('list.ordering'));
-$listDirn  = $this->escape($this->state->get('list.direction'));
-
-$iconStates = array(
+$app          = JFactory::getApplication();
+$function     = $app->input->get('function', 'jSelectMenuItem', 'cmd');
+$listOrder    = $this->escape($this->state->get('list.ordering'));
+$listDirn     = $this->escape($this->state->get('list.direction'));
+$multilingual = JLanguageMultilang::isEnabled();
+$iconStates   = array(
 	-2 => 'icon-trash',
-	0 => 'icon-unpublish',
-	1 => 'icon-publish',
-	2 => 'icon-archive',
+	0  => 'icon-unpublish',
+	1  => 'icon-publish',
+	2  => 'icon-archive',
 );
+
+$app->getDocument()->addScriptDeclaration("
+jQuery(document).ready(function($) {
+	$('body').on('click', '.select-link', function() {
+		if (window.parent)
+		{
+			window.parent." . $function . "(this.getAttribute('data-id'), this.getAttribute('data-title'), null, null, this.getAttribute('data-uri'), this.getAttribute('data-language'), null);
+		}
+	});
+});");
 ?>
 <div class="container-popup">
 
-	<form action="<?php echo JRoute::_('index.php?option=com_menus&view=items&layout=modal&tmpl=component&function=' . $function);?>" method="post" name="adminForm" id="adminForm" class="form-inline">
+	<form action="<?php echo JRoute::_('index.php?option=com_menus&view=items&layout=modal&tmpl=component&function=' . $function); ?>" method="post" name="adminForm" id="adminForm" class="form-inline">
 
 		<?php echo JLayoutHelper::render('joomla.searchtools.default', array('view' => $this)); ?>
 
@@ -78,26 +89,6 @@ $iconStates = array(
 				</tfoot>
 				<tbody>
 				<?php foreach ($this->items as $i => $item) : ?>
-					<?php if ($item->language && JLanguageMultilang::isEnabled())
-					{
-						$tag = strlen($item->language);
-						if ($tag == 5)
-						{
-							$lang = substr($item->language, 0, 2);
-						}
-						elseif ($tag == 6)
-						{
-							$lang = substr($item->language, 0, 3);
-						}
-						else {
-							$lang = "";
-						}
-					}
-					elseif (!JLanguageMultilang::isEnabled())
-					{
-						$lang = "";
-					}
-					?>
 					<tr class="row<?php echo $i % 2; ?>">
 						<td class="center">
 							<span class="<?php echo $iconStates[$this->escape($item->published)]; ?>"></span>
@@ -105,9 +96,13 @@ $iconStates = array(
 						<td>
 							<?php $prefix = JLayoutHelper::render('joomla.html.treeprefix', array('level' => $item->level)); ?>
 							<?php echo $prefix; ?>
-							<?php // @todo onclick function. ?>
-							<a href="javascript:void(0)" onclick="">
-							<?php echo $this->escape($item->title); ?></a>
+							<a class="select-link" href="javascript:void(0)"
+								data-funcion="<?php echo $this->escape($function); ?>"
+								data-id="<?php echo $item->id; ?>"
+								data-title="<?php echo $this->escape(addslashes($item->title)); ?>"
+								data-uri="<?php echo $this->escape(JRoute::_('index.php?Itemid=' . $item->id)); ?>"
+								data-language="<?php echo $item->language; ?>">
+								<?php echo $this->escape($item->title); ?></a>
 							<span class="small">
 							<?php if ($item->type != 'url') : ?>
 								<?php if (empty($item->note)) : ?>
@@ -121,7 +116,7 @@ $iconStates = array(
 							</span>
 							<div title="<?php echo $this->escape($item->path); ?>">
 								<?php echo $prefix; ?>
-								<span class="small"  title="<?php echo isset($item->item_type_desc) ? htmlspecialchars($this->escape($item->item_type_desc), ENT_COMPAT, 'UTF-8') : ''; ?>">
+								<span class="small" title="<?php echo isset($item->item_type_desc) ? htmlspecialchars($this->escape($item->item_type_desc), ENT_COMPAT, 'UTF-8') : ''; ?>">
 									<?php echo $this->escape($item->item_type); ?></span>
 							</div>
 						</td>
@@ -163,7 +158,7 @@ $iconStates = array(
 
 		<input type="hidden" name="task" value="" />
 		<input type="hidden" name="boxchecked" value="0" />
-		<input type="hidden" name="forcedLanguage" value="<?php echo $app->input->get('forcedLanguage', '', 'CMD'); ?>" />
+		<input type="hidden" name="forcedLanguage" value="<?php echo $app->input->get('forcedLanguage', '', 'cmd'); ?>" />
 		<?php echo JHtml::_('form.token'); ?>
 
 	</form>
