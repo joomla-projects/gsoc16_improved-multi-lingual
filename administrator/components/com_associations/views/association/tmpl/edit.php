@@ -27,6 +27,7 @@ $this->app->getDocument()->addScriptDeclaration("
 
 jQuery(document).ready(function($) {
 	$('#toolbar-target').hide();
+	$('#toolbar-undo-association').hide();
 
 	// Save button actions, replacing the default Joomla.submitbutton() with custom function.
 	Joomla.submitbutton = function(task)
@@ -35,6 +36,62 @@ jQuery(document).ready(function($) {
 		if (task == 'association.cancel')
 		{
 			Joomla.submitform(task);
+		}
+		// Undo association
+		else if (task == 'undo-association')
+		{
+			var reference     = $('#reference-association');
+			var target        = $('#target-association');
+			var referenceId   = reference.attr('data-id');
+			var referenceLang = reference.attr('data-language').replace(/-/,'_');
+			var targetId      = target.attr('data-id');
+			var targetLang    = target.attr('data-language').replace(/-/,'_');
+			reference         = reference.contents();
+			target            = target.contents();
+
+			// Remove it on the reference
+			// - For modal association selectors.
+			reference.find('#jform_associations_' + targetLang + '_id').val('');
+			reference.find('#jform_associations_' + targetLang + '_name').val('');
+
+			// - For chosen association selectors (menus).
+			reference.find('#jform_associations_' + targetLang + '_chzn').remove();
+			reference.find('#jform_associations_' + targetLang).val('').change().chosen();
+
+			// Remove it on the target
+			$('#jform_itemlanguage option').each(function()
+			{
+				var lang = $(this).val().split('|')[0];
+
+				if (typeof lang !== 'undefined')
+				{
+ 					lang = lang.replace(/-/,'_');
+ 					// - For modal association selectors.
+ 					target.find('#jform_associations_' + lang + '_id').val('');
+
+ 					// - For chosen association selectors (menus).
+					target.find('#jform_associations_' + lang + '_chzn').remove();
+					chznField = target.find('#jform_associations_' + lang).val('').change().chosen();
+ 				}
+			});
+
+			// Same as above but reference language is not in the selector
+			// - For modal association selectors.
+			target.find('#jform_associations_' + referenceLang + '_id').val('');
+			target.find('#jform_associations_' + referenceLang + '_name').val('');
+
+			// - For chosen association selectors (menus).
+			target.find('#jform_associations_' + referenceLang + '_chzn').remove();
+			chznField = target.find('#jform_associations_' + referenceLang).val('').change().chosen();
+
+			// Save both items
+			Joomla.submitbutton('reference');
+			Joomla.submitbutton('target');
+
+			currentSwitcher = $('#jform_itemlanguage').val();
+			currentLang = referenceLang.replace(/_/,'-');
+			$('#jform_itemlanguage option[value=\"' + currentSwitcher + '\"]').val(currentLang + '|0');
+			$('#jform_itemlanguage').val('').change().trigger('liszt:updated');
 		}
 		// Saving target or reference, send the save action to the target/reference iframe.
 		else
@@ -91,6 +148,7 @@ jQuery(document).ready(function($) {
 		else
 		{
 			$('#toolbar-target').hide();
+			$('#toolbar-undo-association').hide();
 			target.setAttribute('data-id', '0');
 			target.setAttribute('data-language', '');
 			target.src = '';
@@ -133,6 +191,7 @@ jQuery(document).ready(function($) {
 			// If we are creating a new association (before save) we need to add the new association.
 			if (targetLoadedId == '0')
 			{
+				$('#toolbar-undo-association').hide();
 				// Update the target item associations tab.
 				var reference     = document.getElementById('reference-association');
 				var referenceId   = reference.getAttribute('data-id');
@@ -172,6 +231,8 @@ jQuery(document).ready(function($) {
 			// If we are editing a association.
 			else 
 			{
+				$('#toolbar-undo-association').show();
+
 				// Add the id to list of items to check in on close.
 				var currentIdList = document.getElementById('target-id').value;
 				var updatedList   = currentIdList == '' ? targetLoadedId : currentIdList + ',' + targetLoadedId;

@@ -162,6 +162,13 @@ class AssociationsViewAssociation extends JViewLegacy
 		);
 
 		JToolBarHelper::custom('copy', 'copy.png', '', 'COM_ASSOCIATIONS_COPY_REFERENCE', false);
+
+		$bar->appendButton(
+			'Custom', '<button onclick="Joomla.submitbutton(\'undo-association\')"'
+			. 'class="btn btn-small"><span class="icon-cancel icon-white"></span>' 
+			. JText::_('COM_ASSOCIATIONS_UNDO_ASSOCIATION') . '</button>', 'undo-association'
+		);
+
 		JToolbarHelper::cancel('association.cancel', 'JTOOLBAR_CLOSE');
 		JToolbarHelper::help('JGLOBAL_HELP');
 
