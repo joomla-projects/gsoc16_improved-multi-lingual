@@ -8,6 +8,7 @@
  */
 
 defined('JPATH_BASE') or die;
+JHtml::_('bootstrap.tooltip', '.hasTooltip');
 
 /**
  * Supports a modal menu item picker.
@@ -127,7 +128,7 @@ class JFormFieldModal_Menu extends JFormField
 				->select($db->quoteName('title'))
 				->from($db->quoteName('#__menu'))
 				->where($db->quoteName('id') . ' = ' . (int) $value);
-			
+
 			$db->setQuery($query);
 
 			try
