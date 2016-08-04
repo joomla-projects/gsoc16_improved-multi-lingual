@@ -63,7 +63,7 @@ Joomla.submitbutton = function(task, type){
 
 		if (task !== 'item.apply')
 		{
-			window.parent.jQuery('#menuEdit" . (int) $this->item->id .  "Modal').modal('hide');
+			window.parent.jQuery('#menuEdit" . (int) $this->item->id . "Modal').modal('hide');
 		}
 	}
 	else
