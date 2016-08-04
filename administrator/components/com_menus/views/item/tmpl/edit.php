@@ -60,6 +60,11 @@ Joomla.submitbutton = function(task, type){
 	} else if (task == 'item.cancel' || document.formvalidator.isValid(document.getElementById('item-form')))
 	{
 		Joomla.submitform(task, document.getElementById('item-form'));
+
+		if (task !== 'item.apply')
+		{
+			window.parent.jQuery('#menuEdit" . (int) $this->item->id .  "Modal').modal('hide');
+		}
 	}
 	else
 	{
