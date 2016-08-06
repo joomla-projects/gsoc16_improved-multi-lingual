@@ -263,6 +263,53 @@ class AssociationsHelper extends JHelperContent
 	}
 
 	/**
+	 * Get the asset key.
+	 *
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   object     $item       Item db row.
+	 *
+	 * @return  boolean  True on allowed.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected static function getAssetKey(JRegistry $component, $item = null)
+	{
+		// All other components.
+		$asset = JTable::getInstance('Asset');
+		$asset->loadByName($component->assetKey . '.' . $item->id);
+
+		if (is_null($asset->id))
+		{
+			// For menus component, if item asset does not exist, fallback to menu asset.
+			if (!is_null($component->fields->menutype))
+			{
+				// If the menu type id is unknown get it from MenuType table.
+				if (!isset($item->menutypeid))
+				{
+					$table = JTable::getInstance('MenuType');
+					$table->load(array('menutype' => $item->menutype));
+					$item->menutypeid = $table->id;
+				}
+
+				$asset->loadByName($component->realcomponent . '.menu.' . $item->menutypeid);
+			}
+			// For all other components, if item asset does not exist, fallback to category asset (if component supports).
+			elseif (!is_null($component->fields->catid))
+			{
+				$asset->loadByName($component->realcomponent . '.category.' . $item->catid);
+			}
+		}
+
+		// If item asset, category/menu asset does not exist, fallback to component asset.
+		if (is_null($asset->id) && isset($component->fields->catid))
+		{
+			$asset->loadByName($component->realcomponent);
+		}
+
+		return $asset->name;
+	}
+
+	/**
 	 * Check if user is allowed to edit items.
 	 *
 	 * @param   JRegistry  $component  Component properties.
@@ -282,30 +329,19 @@ class AssociationsHelper extends JHelperContent
 			return $user->authorise('core.edit', $component->realcomponent);
 		}
 
-		// Different case for menu items.
-		if ($component->component === 'com_menus')
-		{
-			// If the menu type id is unknown get it from MenuType table.
-			if (!isset($item->menutypeid))
-			{
-				$table = JTable::getInstance('MenuType');
-				$table->load(array('menutype' => $item->menutype));
-				$item->menutypeid = $table->id;
-			}
+		// Get the asset key.
+		$assetKey = self::getAssetKey($component, $item);
 
-			return $user->authorise('core.edit', 'com_menus.menu.' . $item->menutypeid);
-		}
-
-		// All other components.
-		// - Check edit own
+		// Check if can edit own.
 		$canEditOwn = false;
 
 		if (!is_null($component->fields->created_by))
 		{
-			$canEditOwn = $user->authorise('core.edit.own', $component->assetKey . '.' . $item->id) && $item->{$component->fields->created_by} == $user->id;
+			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$component->fields->created_by} == $user->id;
 		}
 
-		return $canEditOwn || $user->authorise('core.edit', $component->assetKey . '.' . $item->id);
+		// Check also core.edit permissions.
+		return $canEditOwn || $user->authorise('core.edit', $assetKey);
 	}
 
 	/**
@@ -328,22 +364,9 @@ class AssociationsHelper extends JHelperContent
 			return $user->authorise('core.create', $component->realcomponent);
 		}
 
-		// Different case for menu items.
-		if ($component->component === 'com_menus')
-		{
-			// If the menu type id is unknown get it from MenuType table.
-			if (!isset($item->menutypeid))
-			{
-				$table = JTable::getInstance('MenuType');
-				$table->load(array('menutype' => $item->menutype));
-				$item->menutypeid = $table->id;
-			}
 
-			return $user->authorise('core.create', 'com_menus.menu.' . $item->menutypeid);
-		}
-
-		// All other components.
-		return $user->authorise('core.create', $component->assetKey . '.' . $item->id);
+		// Check core.create permissions.
+		return $user->authorise('core.create', self::getAssetKey($component, $item));
 	}
 
 	/**
