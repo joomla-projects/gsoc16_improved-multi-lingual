@@ -16,10 +16,11 @@ JHtml::_('bootstrap.tooltip');
 JHtml::_('behavior.multiselect');
 JHtml::_('formbehavior.chosen', 'select');
 
-$listOrder  = $this->escape($this->state->get('list.ordering'));
-$listDirn   = $this->escape($this->state->get('list.direction'));
-$colSpan    =  5;
-$iconStates = array(
+$listOrder        = $this->escape($this->state->get('list.ordering'));
+$listDirn         = $this->escape($this->state->get('list.direction'));
+$canManageCheckin = $user->authorise('core.manage', 'com_checkin');
+$colSpan          =  5;
+$iconStates       = array(
 	-2 => 'icon-trash',
 	0  => 'icon-unpublish',
 	1  => 'icon-publish',
@@ -88,7 +89,7 @@ $iconStates = array(
 			<tbody>
 			<?php foreach ($this->items as $i => $item) :
 				$canEdit    = AssociationsHelper::allowEdit($this->component, $item);
-				$canCheckin = AssociationsHelper::allowCheckActions($this->component, $item);
+				$canCheckin = $canManageCheckin || AssociationsHelper::allowCheckActions($this->component, $item);
 				?>
 				<tr class="row<?php echo $i % 2; ?>">
 					<td class="center">
