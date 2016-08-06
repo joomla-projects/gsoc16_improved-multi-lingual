@@ -45,6 +45,7 @@ class AssociationsHelper extends JHelperContent
 			// Get component info from key.
 			$matches = preg_split("#[\.\|]+#", $key);
 
+			$cp[$key]->key                              = $key;
 			$cp[$key]->component                        = $matches[0];
 			$cp[$key]->item                             = isset($matches[1]) ? $matches[1] : null;
 			$cp[$key]->extension                        = isset($matches[2]) ? $matches[2] : null;
@@ -262,97 +263,109 @@ class AssociationsHelper extends JHelperContent
 	}
 
 	/**
-	 * Check if user is allowed to edit own item
+	 * Check if user is allowed to edit items.
 	 *
-	 * @param   string  $componentKey  The component properties.
-	 * @param   JTable  $item          Database row from the component.
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   object     $item       Item db row.
 	 *
-	 * @return  boolean.
-	 *
-	 * @since  __DEPLOY_VERSION__
-	 */
-	public static function allowEditOwn($componentKey = '', $item = null)
-	{
-		$user  = JFactory::getUser();
-
-		if (isset($item->{$componentKey->fields->created_by}))
-		{
-			return $user->authorise(
-					'core.edit.own', $componentKey->realcomponent . '.' . $item->id
-				) && $item->{$componentKey->fields->created_by} == $user->id;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Check if user is allowed to edit item
-	 *
-	 * @param   string  $componentKey  The component properties.
-	 * @param   JTable  $item          Database row from the component.
-	 *
-	 * @return  boolean.
+	 * @return  boolean  True on allowed.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowEdit($componentKey = '', $item = null)
+	public static function allowEdit(JRegistry $component, $item = null)
 	{
 		$user = JFactory::getUser();
 
-		// Different case for menu items
-		if ($componentKey->realcomponent == 'com_menus')
+		// If no item properties return the component permissions for core.edit.
+		if (is_null($item))
 		{
-			if (isset($item->menutypeid))
-			{
-				return $user->authorise('core.edit', 'com_menus.menu.' . $item->menutypeid);
-			}
-			else
+			return $user->authorise('core.edit', $component->realcomponent);
+		}
+
+		// Different case for menu items.
+		if ($component->component === 'com_menus')
+		{
+			// If the menu type id is unknown get it from MenuType table.
+			if (!isset($item->menutypeid))
 			{
 				$table = JTable::getInstance('MenuType');
 				$table->load(array('menutype' => $item->menutype));
-				
-				return $user->authorise('core.edit', 'com_menus.menu.' . $table->id);
+				$item->menutypeid = $table->id;
 			}
-			
+
+			return $user->authorise('core.edit', 'com_menus.menu.' . $item->menutypeid);
 		}
 
-		return $user->authorise('core.edit', $componentKey->realcomponent . '.' . $item->id) || self::allowEditOwn($componentKey, $item);
+		// All other components.
+		// - Check edit own
+		$canEditOwn = false;
+
+		if (!is_null($component->fields->created_by))
+		{
+			// This check is needed to work in the list and edit view.
+			$canEditOwn = $user->authorise('core.edit.own', $component->assetKey . '.' . $item->id) && (int) $item->{$component->fields->created_by} === (int) $user->id;
+		}
+
+		return $canEditOwn || $user->authorise('core.edit', $component->assetKey . '.' . $item->id);
 	}
 
 	/**
-	 * Check if user is allowed to create item
+	 * Check if user is allowed to create items.
 	 *
-	 * @param   string  $componentKey  The component properties.
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   object     $item       Item db row.
 	 *
-	 * @return  boolean.
+	 * @return  boolean  True on allowed.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowCreate($componentKey = '')
+	public static function allowCreate(JRegistry $component, $item = null)
 	{
 		$user = JFactory::getUser();
-		
-		return $user->authorise('core.create', $componentKey->realcomponent);
+
+		// If no item properties return the component permissions for core.edit.
+		if (is_null($item))
+		{
+			return $user->authorise('core.create', $component->realcomponent);
+		}
+
+		// Different case for menu items.
+		if ($component->component === 'com_menus')
+		{
+			// If the menu type id is unknown get it from MenuType table.
+			if (!isset($item->menutypeid))
+			{
+				$table = JTable::getInstance('MenuType');
+				$table->load(array('menutype' => $item->menutype));
+				$item->menutypeid = $table->id;
+			}
+
+			return $user->authorise('core.create', 'com_menus.menu.' . $item->menutypeid);
+		}
+
+		// All other components.
+		return $user->authorise('core.create', $component->assetKey . '.' . $item->id);
 	}
 
 	/**
-	 * Check if user is allowed to edit checkout item
+	 * Check if user is allowed to perform check actions (checkin/checkout) on a item.
 	 *
-	 * @param   string  $componentKey  The component properties.
-	 * @param   JTable  $item          Database row from the component.
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   object     $item       Item db row.
 	 *
-	 * @return  boolean.
+	 * @return  boolean  True on allowed.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowCheckout($componentKey = '', $item = null)
+	public static function allowCheckActions(JRegistry $component, $item = null)
 	{
-		if (!is_null($componentKey->fields->checked_out))
+		// If no item properties or component doesn't have checked_out field, doesn't support checkin/checkout.
+		if (is_null($item) || is_null($component->fields->checked_out))
 		{
-			$user = JFactory::getUser();
-
-			// Check if user checked out this item
-			return in_array($item->{$componentKey->fields->checked_out}, array($user->id, 0));
+			return false;
 		}
+
+		// All other cases. Check if user checked out this item.
+		return in_array($item->{$component->fields->checked_out}, array(JFactory::getUser()->id, 0));
 	}
 }
