@@ -199,7 +199,7 @@ class AssociationsModelAssociations extends JModelList
 				->join('LEFT', $db->quoteName('#__viewlevels', 'ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $component->fields->access));
 
 			// Implement View Level Access
-			if (!$user->authorise('core.admin', $component->assetKey))
+			if (!$user->authorise('core.admin', $component->realcomponent))
 			{
 				$query->where('a.' . $component->fields->access . ' IN (' . implode(',', $user->getAuthorisedViewLevels()) . ')');
 			}
