@@ -10,6 +10,7 @@
 defined('JPATH_BASE') or die;
 
 JLoader::register('AssociationsHelper', JPATH_ADMINISTRATOR . '/components/com_associations/helpers/associations.php');
+
 JFormHelper::loadFieldClass('list');
 
 /**
@@ -36,29 +37,31 @@ class JFormFieldItemLanguage extends JFormFieldList
 	 */
 	protected function getOptions()
 	{
-		$options = array();
-
-		$input         = JFactory::getApplication()->input;
-		$component     = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
-		$referenceId   = $input->get('id', 0, 'int');
-		$realView      = !is_null($component->extension) ? $component->extension : $component->item;
+		$input       = JFactory::getApplication()->input;
+		$component   = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
+		$referenceId = $input->get('id', 0, 'int');
 
 		JLoader::register($component->associations->gethelper->class, $component->associations->gethelper->file);
 
 		// Get item associations given ID and item type
-		$associations      = call_user_func(
+		$associations = call_user_func(
 				array(
 					$component->associations->gethelper->class, 
-					$component->associations->gethelper->method), 
-					$referenceId, $realView
+					$component->associations->gethelper->method
+				),
+				$referenceId,
+				(!is_null($component->extension) ? $component->extension : $component->item)
 			);
 
 		// Get reference language.
-		$table            = clone $component->table;
+		$table = clone $component->table;
 		$table->load($referenceId);
-		$referenceLang    = $table->{$component->fields->language};
-		$canCreate        = AssociationsHelper::allowCreate($component);
+		$referenceLang = $table->{$component->fields->language};
 
+		// Check if user can create items in this component.
+		$canCreate = AssociationsHelper::allowCreate($component, null);
+
+		// Gets existing languages.
 		$existingLanguages = JHtml::_('contentlanguage.existing', false, true);
 
 		// Each option has the format "<lang>|<id>", example: "en-GB|1"
@@ -94,7 +97,7 @@ class JFormFieldItemLanguage extends JFormFieldList
 				$canEdit = AssociationsHelper::allowEdit($component, $table);
 
 				// Do an additional check to check if user can edit a checked out item (if component supports it).
-				$canCheckout = AssociationsHelper::allowCheckout($component, $table);
+				$canCheckout = AssociationsHelper::allowCheckActions($component, $table);
 
 				// Disable language if user is not allowed to edit the item associated to it.
 				$lang->disable = !($canEdit && $canCheckout);
