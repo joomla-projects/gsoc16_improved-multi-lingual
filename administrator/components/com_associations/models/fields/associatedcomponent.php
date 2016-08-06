@@ -8,6 +8,8 @@
  */
 defined('JPATH_BASE') or die;
 
+JLoader::register('AssociationsHelper', JPATH_ADMINISTRATOR . '/components/com_associations/helpers/associations.php');
+
 JFormHelper::loadFieldClass('groupedlist');
 
 /**
@@ -36,6 +38,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 	 */
 	protected function getGroups()
 	{
+		$user              = JFactory::getUser();
 		$options           = array();
 		$typeAliasList     = array();
 		$excludeComponents = array(
@@ -63,8 +66,6 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			'com_templates',
 			'com_users',
 		);
-
-		$user       = JFactory::getUser();
 
 		// Get all admin components.
 		foreach (glob(JPATH_ADMINISTRATOR . '/components/*', GLOB_NOSORT | GLOB_ONLYDIR) as $componentAdminPath)
