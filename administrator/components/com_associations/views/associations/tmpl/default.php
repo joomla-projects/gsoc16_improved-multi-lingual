@@ -9,6 +9,8 @@
 
 defined('_JEXEC') or die;
 
+JLoader::register('AssociationsHelper', JPATH_ADMINISTRATOR . '/components/com_associations/helpers/associations.php');
+
 JHtml::_('jquery.framework');
 JHtml::_('bootstrap.tooltip');
 JHtml::_('behavior.multiselect');
@@ -86,7 +88,7 @@ $iconStates = array(
 			<tbody>
 			<?php foreach ($this->items as $i => $item) :
 				$canEdit    = AssociationsHelper::allowEdit($this->component, $item);
-				$canCheckin = AssociationsHelper::allowCheckout($this->component, $item);
+				$canCheckin = AssociationsHelper::allowCheckActions($this->component, $item);
 				?>
 				<tr class="row<?php echo $i % 2; ?>">
 					<td class="center">
@@ -101,11 +103,11 @@ $iconStates = array(
 						<?php if (isset($item->level)) : ?>
 							<?php echo JLayoutHelper::render('joomla.html.treeprefix', array('level' => $item->level)); ?>
 						<?php endif; ?>
-						<?php if (isset($item->checked_out) && $item->checked_out) : ?>
-							<?php echo JHtml::_('jgrid.checkedout', $i, $item->editor, $item->checked_out_time, 'associations.', $canCheckin); ?>
+						<?php if (isset($item->{$component->fields->checked_out}) && $item->{$component->fields->checked_out}) : ?>
+							<?php echo JHtml::_('jgrid.checkedout', $i, $item->editor, $item->{$component->fields->checked_out_time}, 'associations.', $canCheckin); ?>
 						<?php endif; ?>
 						<?php if ($canEdit) : ?>
-							<a href="<?php echo JRoute::_($this->editLink . '&id=' . (int) $item->id); ?>">
+							<a href="<?php echo JRoute::_($this->editUri . '&id=' . (int) $item->id); ?>">
 							<?php echo $this->escape($item->title); ?></a>
 						<?php else : ?>
 							<span title="<?php echo JText::sprintf('JFIELD_ALIAS_LABEL', $this->escape($item->alias)); ?>"><?php echo $this->escape($item->title); ?></span>
