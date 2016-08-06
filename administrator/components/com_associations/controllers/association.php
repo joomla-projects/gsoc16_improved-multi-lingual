@@ -45,7 +45,7 @@ class AssociationsControllerAssociation extends JControllerForm
 		}
 
 		// Check if reference item can be checked out.
-		if (AssociationsHelper::allowCheckActions($cp, $table) && !$cp->model->checkout($table->id))
+		if (!AssociationsHelper::allowCheckActions($cp, $table) || !$cp->model->checkout($table->id))
 		{
 			JFactory::getApplication()->enqueueMessage(JText::sprintf('JLIB_APPLICATION_ERROR_CHECKOUT_FAILED', $cp->model->getError()), 'error');
 			$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
