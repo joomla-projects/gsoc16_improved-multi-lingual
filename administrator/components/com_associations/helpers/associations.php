@@ -263,21 +263,22 @@ class AssociationsHelper extends JHelperContent
 	}
 
 	/**
-	 * Get the asset key.
+	 * Get a existing asset key using the item parents.
 	 *
 	 * @param   JRegistry  $component  Component properties.
 	 * @param   object     $item       Item db row.
 	 *
-	 * @return  boolean  True on allowed.
+	 * @return  string  The asset key.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
 	protected static function getAssetKey(JRegistry $component, $item = null)
 	{
-		// All other components.
+		// Get the item asset.
 		$asset = JTable::getInstance('Asset');
 		$asset->loadByName($component->assetKey . '.' . $item->id);
 
+		// If the item asset does not exist (ex: com_menus, com_contact, com_newsfeeds).
 		if (is_null($asset->id))
 		{
 			// For menus component, if item asset does not exist, fallback to menu asset.
