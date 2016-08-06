@@ -73,10 +73,10 @@ class AssociationsViewAssociation extends JViewLegacy
 		$this->component   = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
 
 		// Get reference language.
-		$this->table = clone $this->component->table;
-		$this->table->load($this->referenceId);
+		$table = clone $this->component->table;
+		$table->load($this->referenceId);
 
-		$this->referenceLanguage = $this->table->{$this->component->fields->language};
+		$this->referenceLanguage = $table->{$this->component->fields->language};
 
 		$options = array(
 			'option'    => $this->component->component,
@@ -88,8 +88,7 @@ class AssociationsViewAssociation extends JViewLegacy
 		);
 
 		// Reference and target edit links.
-		$this->link       = 'index.php?' . http_build_query($options) . '&id=' . $this->referenceId;
-		$this->targetLink = 'index.php?' . http_build_query($options) . '&id=';
+		$this->editUri = 'index.php?' . http_build_query($options);
 
 		/*
 		* @todo Review later
@@ -131,19 +130,19 @@ class AssociationsViewAssociation extends JViewLegacy
 	 */
 	protected function addToolbar()
 	{
-		$input = JFactory::getApplication()->input;
-		$input->set('hidemainmenu', 1);
-
-		$bar   = JToolbar::getInstance('toolbar');
+		// Hide main menu.
+		JFactory::getApplication()->input->set('hidemainmenu', 1);
 
 		JToolbarHelper::title(JText::_('COM_ASSOCIATIONS_HEADER_EDIT'), 'contract');
+
+		$bar = JToolbar::getInstance('toolbar');
 
 		$bar->appendButton(
 			'Custom', '<button onclick="Joomla.submitbutton(\'reference\')"'
 			. 'class="btn btn-small btn-success"><span class="icon-apply icon-white"></span>'
 			. JText::_('COM_ASSOCIATIONS_SAVE_REFERENCE') . '</button>', 'reference'
 		);
-		
+
 		$bar->appendButton(
 			'Custom', '<button onclick="Joomla.submitbutton(\'target\')"'
 			. 'class="btn btn-small btn-success"><span class="icon-apply icon-white"></span>' 
