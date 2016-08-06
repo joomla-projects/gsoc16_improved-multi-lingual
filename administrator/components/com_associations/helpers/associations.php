@@ -288,7 +288,7 @@ class AssociationsHelper extends JHelperContent
 				if (!isset($item->menutypeid))
 				{
 					$table = JTable::getInstance('MenuType');
-					$table->load(array('menutype' => $item->menutype));
+					$table->load(array('menutype' => $item->{$component->fields->menutype}));
 					$item->menutypeid = $table->id;
 				}
 
@@ -297,12 +297,12 @@ class AssociationsHelper extends JHelperContent
 			// For all other components, if item asset does not exist, fallback to category asset (if component supports).
 			elseif (!is_null($component->fields->catid))
 			{
-				$asset->loadByName($component->realcomponent . '.category.' . $item->catid);
+				$asset->loadByName($component->realcomponent . '.category.' . $item->{$component->fields->catid});
 			}
 		}
 
 		// If item asset, category/menu asset does not exist, fallback to component asset.
-		if (is_null($asset->id) && isset($component->fields->catid))
+		if (is_null($asset->id))
 		{
 			$asset->loadByName($component->realcomponent);
 		}
