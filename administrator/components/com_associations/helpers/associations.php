@@ -364,7 +364,9 @@ class AssociationsHelper extends JHelperContent
 			return false;
 		}
 
+		$user = JFactory::getUser();
+
 		// All other cases. Check if user checked out this item.
-		return in_array($item->{$component->fields->checked_out}, array(JFactory::getUser()->id, 0));
+		return $user->authorise('core.manage', 'com_checkin') || in_array($item->{$component->fields->checked_out}, array($user->id, 0));
 	}
 }
