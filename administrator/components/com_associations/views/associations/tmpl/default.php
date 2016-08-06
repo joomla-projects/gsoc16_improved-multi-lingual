@@ -103,8 +103,8 @@ $iconStates = array(
 						<?php if (isset($item->level)) : ?>
 							<?php echo JLayoutHelper::render('joomla.html.treeprefix', array('level' => $item->level)); ?>
 						<?php endif; ?>
-						<?php if (isset($item->{$component->fields->checked_out}) && $item->{$component->fields->checked_out}) : ?>
-							<?php echo JHtml::_('jgrid.checkedout', $i, $item->editor, $item->{$component->fields->checked_out_time}, 'associations.', $canCheckin); ?>
+						<?php if (isset($item->{$this->component->fields->checked_out}) && $item->{$this->component->fields->checked_out}) : ?>
+							<?php echo JHtml::_('jgrid.checkedout', $i, $item->editor, $item->{$this->component->fields->checked_out_time}, 'associations.', $canCheckin); ?>
 						<?php endif; ?>
 						<?php if ($canEdit) : ?>
 							<a href="<?php echo JRoute::_($this->editUri . '&id=' . (int) $item->id); ?>">
