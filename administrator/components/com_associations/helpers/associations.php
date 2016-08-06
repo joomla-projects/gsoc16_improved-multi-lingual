@@ -302,8 +302,7 @@ class AssociationsHelper extends JHelperContent
 
 		if (!is_null($component->fields->created_by))
 		{
-			// This check is needed to work in the list and edit view.
-			$canEditOwn = $user->authorise('core.edit.own', $component->assetKey . '.' . $item->id) && (int) $item->{$component->fields->created_by} === (int) $user->id;
+			$canEditOwn = $user->authorise('core.edit.own', $component->assetKey . '.' . $item->id) && $item->{$component->fields->created_by} == $user->id;
 		}
 
 		return $canEditOwn || $user->authorise('core.edit', $component->assetKey . '.' . $item->id);
