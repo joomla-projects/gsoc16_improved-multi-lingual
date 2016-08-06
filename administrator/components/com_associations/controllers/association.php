@@ -31,31 +31,26 @@ class AssociationsControllerAssociation extends JControllerForm
 	 */
 	public function edit($key = null, $urlVar = null)
 	{
-		$cp = AssociationsHelper::getComponentProperties($this->input->get('component', '', 'string'));
-
+		$cp   = AssociationsHelper::getComponentProperties($this->input->get('component', '', 'string'));
 		$table = clone $cp->table;
-		$table->load($this->input->get('id', null, 'int'));
+		$table->load($this->input->get('id', 0, 'int'));
 
+		// Check if reference item can be edited.
 		if (!AssociationsHelper::allowEdit($cp, $table))
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('JLIB_APPLICATION_ERROR_EDIT_NOT_PERMITTED'), 'error');
 			$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
+
+			return false;
 		}
 
-		if (!is_null($cp->fields->checked_out))
+		// Check if reference item can be checked out.
+		if (AssociationsHelper::allowCheckActions($cp, $table) && !$cp->model->checkout($table->id))
 		{
-			$id    = $this->input->get('id', 0, 'int');
-			$table = clone $cp->table;
-			$table->load($id);
+			JFactory::getApplication()->enqueueMessage(JText::sprintf('JLIB_APPLICATION_ERROR_CHECKOUT_FAILED', $cp->model->getError()), 'error');
+			$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
 
-			// Attempt to check-out the record for editing and redirect.
-			if (!in_array($table->{$cp->fields->checked_out}, array(JFactory::getUser()->id, 0)) && !$cp->model->checkout($id))
-			{
-				JFactory::getApplication()->enqueueMessage(JText::sprintf('JLIB_APPLICATION_ERROR_CHECKOUT_FAILED', $cp->model->getError()), 'error');
-				$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
-
-				return false;
-			}
+			return false;
 		}
 
 		return parent::display();
@@ -73,6 +68,7 @@ class AssociationsControllerAssociation extends JControllerForm
 	public function cancel($key = null)
 	{
 		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+
 		$cp = AssociationsHelper::getComponentProperties($this->input->get('component', '', 'string'));
 
 		// Only check in, if component allows to check out.
