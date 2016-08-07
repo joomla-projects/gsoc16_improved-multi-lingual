@@ -33,7 +33,7 @@ class AssociationsModelAssociations extends JModelList
 				'title',
 				'ordering',
 				'component',
-				'language',
+				'language', 'language_title',
 				'association',
 				'menutype', 'menutype_title',
 				'level',
@@ -61,11 +61,11 @@ class AssociationsModelAssociations extends JModelList
 	protected function populateState($ordering = 'ordering', $direction = 'asc')
 	{
 		$this->setState('component', $this->getUserStateFromRequest($this->context . '.component', 'component', '', 'string'));
-		$this->setState('language', $this->getUserStateFromRequest($this->context . '.language', 'language', '', 'string'));
 
 		$this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
 		$this->setState('filter.published', $this->getUserStateFromRequest($this->context . '.filter.published', 'filter_published', '', 'cmd'));
 		$this->setState('filter.category_id', $this->getUserStateFromRequest($this->context . '.filter.category_id', 'filter_category_id', '', 'cmd'));
+		$this->setState('filter.language', $this->getUserStateFromRequest($this->context . '.filter.language', 'filter_language', '', 'string'));
 		$this->setState('filter.menutype', $this->getUserStateFromRequest($this->context . '.filter.menutype', 'filter_menutype', '', 'string'));
 		$this->setState('filter.access', $this->getUserStateFromRequest($this->context . '.filter.access', 'filter_access', '', 'string'));
 		$this->setState('filter.level', $this->getUserStateFromRequest($this->context . '.filter.level', 'filter_level', '', 'cmd'));
@@ -91,10 +91,10 @@ class AssociationsModelAssociations extends JModelList
 	{
 		// Compile the store id.
 		$id .= ':' . $this->getState('component');
-		$id .= ':' . $this->getState('language');
 		$id .= ':' . $this->getState('filter.search');
 		$id .= ':' . $this->getState('filter.published');
 		$id .= ':' . $this->getState('filter.category_id');
+		$id .= ':' . $this->getState('filter.language');
 		$id .= ':' . $this->getState('filter.menutype');
 		$id .= ':' . $this->getState('filter.access');
 		$id .= ':' . $this->getState('filter.level');
@@ -218,9 +218,13 @@ class AssociationsModelAssociations extends JModelList
 		}
 
 		// Filter on the language.
-		if ($language = $this->getState('language'))
+		if ($language = $this->getState('filter.language'))
 		{
 			$query->where($db->quoteName('a.' . $component->fields->language) . ' = ' . $db->quote($language));
+		}
+		else
+		{
+			$query->where($db->quoteName('a.' . $component->fields->language) . ' != ' . $db->quote('*'));
 		}
 
 		// Filter by published state.
