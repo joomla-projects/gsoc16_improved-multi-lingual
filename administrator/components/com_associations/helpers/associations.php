@@ -284,20 +284,21 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Get the associated language edit links Html.
 	 *
-	 * @param   JRegistry  $component  Component properties.
-	 * @param   integer    $itemId     Item id.
+	 * @param   JRegistry  $component     Component properties.
+	 * @param   integer    $itemId        Item id.
+	 * @param   string     $itemlanguage  Item language code.
 	 *
 	 * @return  string  The language HTML
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function getAssociationHtmlList($component, $itemId)
+	public static function getAssociationHtmlList($component, $itemId, $itemlanguage)
 	{
 		$db    = JFactory::getDbo();
 		$items = array();
 
 		// Get the associations.
-		$associations = JLanguageAssociations::getAssociations($component->realcomponent, $component->dbtable, $component->associations->context, $itemId, 'id', $component->fields->alias, $component->fields->catid);
+		$associations = JLanguageAssociations::getAssociations($component->realcomponent, $component->dbtable, $component->associations->context, $itemId, $component->fields->id, $component->fields->alias, $component->fields->catid);
 
 		// if associations exist get their data.
 		if ($associations)
@@ -351,10 +352,17 @@ class AssociationsHelper extends JHelperContent
 		// Create associatied items list.
 		foreach ($languages as $langCode => $language)
 		{
+			// Don't do for the reference language.
+			if ($langCode == $itemlanguage)
+			{
+				continue;
+			}
+
 			// Get html parameters.
 			if (isset($items[$langCode]))
 			{
-				$title       = $items[$langCode]->title;
+				$title = $items[$langCode]->title;
+
 				if (isset($items[$langCode]->category_title))
 				{
 					$additional = '<br/>(' . $items[$langCode]->category_title . ')';
@@ -367,6 +375,7 @@ class AssociationsHelper extends JHelperContent
 				{
 					$additional = '';
 				}
+
 				$labelClass = 'label label-success'; 
 				$target     = $langCode . ':' . $items[$langCode]->id . ':edit';
 			}
