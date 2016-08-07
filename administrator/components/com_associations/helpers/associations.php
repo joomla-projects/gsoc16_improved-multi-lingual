@@ -52,10 +52,28 @@ class AssociationsHelper extends JHelperContent
 			$cp[$key]->realcomponent                    = !is_null($cp[$key]->extension) ? $cp[$key]->extension : $cp[$key]->component;
 			$cp[$key]->sitePath                         = JPATH_SITE . '/components/' . $cp[$key]->realcomponent;
 			$cp[$key]->adminPath                        = JPATH_ADMINISTRATOR . '/components/' . $cp[$key]->component;
+			$cp[$key]->enabled                          = true;
 			$cp[$key]->associations                     = new Registry;
 			$cp[$key]->associations->support            = true;
 			$cp[$key]->associations->supportItem        = false;
 			$cp[$key]->associations->supportCategories  = false;
+
+			// If component is disabled or not installed, component does not support associations.
+			$db = JFactory::getDbo();
+
+			$query = $db->getQuery(true)
+				->select($db->quoteName('extension_id'))
+				->from($db->quoteName('#__extensions'))
+				->where($db->quoteName('element') . ' = ' . $db->quote($cp[$key]->realcomponent))
+				->where($db->quoteName('type') . ' = ' . $db->quote('component'))
+				->where($db->quoteName('enabled') . ' = 1');
+
+			if (!$db->setQuery($query)->loadResult())
+			{
+				$cp[$key]->enabled = false;
+
+				return $cp[$key];
+			}
 
 			// Check for component model and his properties.
 			$componentName = ucfirst(substr($cp[$key]->component, 4));
