@@ -355,7 +355,7 @@ class AssociationsHelper extends JHelperContent
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowCreate(JRegistry $component, $item = null)
+	public static function allowAdd(JRegistry $component, $item = null)
 	{
 		$user = JFactory::getUser();
 
