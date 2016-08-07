@@ -59,7 +59,7 @@ class JFormFieldItemLanguage extends JFormFieldList
 		$referenceLang = $table->{$component->fields->language};
 
 		// Check if user can create items in this component.
-		$canCreate = AssociationsHelper::allowCreate($component, null);
+		$canCreate = AssociationsHelper::allowAdd($component, null);
 
 		// Gets existing languages.
 		$existingLanguages = JHtml::_('contentlanguage.existing', false, true);
