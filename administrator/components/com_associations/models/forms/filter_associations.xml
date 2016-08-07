@@ -9,15 +9,6 @@
 		>
 		<option value="">COM_ASSOCIATIONS_FILTER_SELECT_ITEM_TYPE</option>
 	</field>
-	<field
-		name="language"
-		type="contentlanguage"
-		label="JOPTION_FILTER_LANGUAGE"
-		description="JOPTION_FILTER_LANGUAGE_DESC"
-		onchange="this.form.submit();"
-		>
-		<option value="">JOPTION_SELECT_LANGUAGE</option>
-	</field>
 	<fields name="filter">
 		<field
 			name="search"
@@ -45,6 +36,15 @@
 			onchange="this.form.submit();"
 			>
 			<option value="">JOPTION_SELECT_CATEGORY</option>
+		</field>
+		<field
+			name="language"
+			type="contentlanguage"
+			label="JOPTION_FILTER_LANGUAGE"
+			description="JOPTION_FILTER_LANGUAGE_DESC"
+			onchange="this.form.submit();"
+			>
+			<option value="">JOPTION_SELECT_LANGUAGE</option>
 		</field>
 		<field
 			name="menutype"
@@ -94,6 +94,8 @@
 			<option value="title DESC">JGLOBAL_TITLE_DESC</option>
 			<option value="category_title ASC">JCATEGORY_ASC</option>
 			<option value="category_title DESC">JCATEGORY_DESC</option>
+			<option value="language_title ASC">JGRID_HEADING_LANGUAGE_ASC</option>
+			<option value="language_title DESC">JGRID_HEADING_LANGUAGE_DESC</option>
 			<option value="association ASC">JASSOCIATIONS_ASC</option>
 			<option value="association DESC">JASSOCIATIONS_DESC</option>
 			<option value="menutype_title ASC">COM_ASSOCIATIONS_HEADING_MENUTYPE_ASC</option>
