@@ -64,20 +64,18 @@ class AssociationsViewAssociation extends JViewLegacy
 			return false;
 		}
 
-		$this->app   = JFactory::getApplication();
-
-		$this->form  = $this->get('Form');
-		$input       = $this->app->input;
-
-		$this->referenceId = $input->get('id', 0, 'int');
-		$this->component   = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
+		$this->app       = JFactory::getApplication();
+		$this->form      = $this->get('Form');
+		$input           = $this->app->input;
+		$this->component = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
 
 		// Get reference language.
-		$table = clone $this->component->table;
+		$this->referenceId = $input->get('id', 0, 'int');
+		$table             = clone $this->component->table;
 		$table->load($this->referenceId);
-
 		$this->referenceLanguage = $table->{$this->component->fields->language};
 
+		// Get edit uri.
 		$options = array(
 			'option'    => $this->component->component,
 			'view'      => $this->component->item,
@@ -90,32 +88,24 @@ class AssociationsViewAssociation extends JViewLegacy
 		// Reference and target edit links.
 		$this->editUri = 'index.php?' . http_build_query($options);
 
-		/*
-		* @todo Review later
-		*/
+		// Get target language.
+		$this->targetId         = '0';
+		$this->targetLanguage   = '';
+		$this->defaultTargetSrc = '';
+
+		if ($target = $input->get('target', '', 'string'))
+		{
+			$matches = preg_split("#[\:]+#", $target);
+			$this->targetId         = $matches[1];
+			$this->targetLanguage   = $matches[0];
+			$this->defaultTargetSrc = JRoute::_($this->editUri . '&id=' . (int) $this->targetId);
+		}
 
 		// We don't need toolbar in the modal window.
 		if ($this->getLayout() !== 'modal')
 		{
 			$this->addToolbar();
 			$this->sidebar = JHtmlSidebar::render();
-		}
-		else
-		{
-			// In article associations modal we need to remove language filter if forcing a language.
-			// We also need to change the category filter to show show categories with All or the forced language.
-			if ($forcedLanguage = JFactory::getApplication()->input->get('forcedLanguage', '', 'CMD'))
-			{
-				// If the language is forced we can't allow to select the language, so transform the language selector filter into an hidden field.
-				$languageXml = new SimpleXMLElement('<field name="language" type="hidden" default="' . $forcedLanguage . '" />');
-				$this->filterForm->setField($languageXml, 'filter', true);
-
-				// Also, unset the active language filter so the search tools is not open by default with this filter.
-				unset($this->activeFilters['language']);
-
-				// One last changes needed is to change the category filter to just show categories with All language or with the forced language.
-				$this->filterForm->setFieldAttribute('category_id', 'language', '*,' . $forcedLanguage, 'filter');
-			}
 		}
 
 		parent::display($tpl);
