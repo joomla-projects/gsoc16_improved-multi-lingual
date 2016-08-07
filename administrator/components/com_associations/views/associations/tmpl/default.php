@@ -18,7 +18,7 @@ JHtml::_('formbehavior.chosen', 'select');
 
 $listOrder        = $this->escape($this->state->get('list.ordering'));
 $listDirn         = $this->escape($this->state->get('list.direction'));
-$canManageCheckin = $user->authorise('core.manage', 'com_checkin');
+$canManageCheckin = JFactory::getUser()->authorise('core.manage', 'com_checkin');
 $colSpan          =  5;
 $iconStates       = array(
 	-2 => 'icon-trash',
