@@ -368,7 +368,7 @@ class AssociationsHelper extends JHelperContent
 					$additional = '';
 				}
 				$labelClass = 'label label-success'; 
-				$target     = $langCode . ':' . $items[$langCode]->id;
+				$target     = $langCode . ':' . $items[$langCode]->id . ':edit';
 			}
 			else
 			{
@@ -376,7 +376,7 @@ class AssociationsHelper extends JHelperContent
 				$title      = JText::_('COM_ASSOCIATIONS_ADD_NEW_ASSOCIATION');
 				$additional = '';
 				$labelClass = 'label'; 
-				$target     = $langCode . ':0';
+				$target     = $langCode . ':0:add';
 			}
 
 			// Generate item Html.
