@@ -43,7 +43,7 @@ class AssociationsHelper extends JHelperContent
 			$cp[$key] = new Registry;
 
 			// Get component info from key.
-			$matches = preg_split("#[\.\|]+#", $key);
+			$matches = preg_split("#[\.\:]+#", $key);
 
 			$cp[$key]->key                              = $key;
 			$cp[$key]->component                        = $matches[0];
