@@ -53,7 +53,6 @@ $input   = $this->app->input;
 $options = array(
 			'layout'            => $input->get('layout', '', 'string'),
 			'component'         => $this->component->key,
-			'referencelanguage' => $input->get('referencelanguage', '', 'string'),
 			'id'                => $this->referenceId,
 		);
 ?>
@@ -85,11 +84,11 @@ $options = array(
 					<?php echo $this->form->getInput('itemlanguage'); ?>
 				</div>
 				<iframe id="target-association" name="target-association"
-					src=""
+					src="<?php echo $this->defaultTargetSrc; ?>"
 					height="100%" width="400px" scrolling="no"
-					data-id="0"
-					data-language=""
-					data-editurl="<?php echo JRoute::_($this->editUri . '&id='); ?>">
+					data-id="<?php echo $this->targetId; ?>"
+					data-language="<?php echo $this->targetLanguage; ?>"
+					data-editurl="<?php echo JRoute::_($this->editUri . '&id=' . (int) $this->targetId); ?>">
 				</iframe>
 			</div>
 		</div>
