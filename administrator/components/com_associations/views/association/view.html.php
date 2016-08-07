@@ -96,9 +96,11 @@ class AssociationsViewAssociation extends JViewLegacy
 		if ($target = $input->get('target', '', 'string'))
 		{
 			$matches = preg_split("#[\:]+#", $target);
+			$this->targetAction     = $matches[2];
 			$this->targetId         = $matches[1];
 			$this->targetLanguage   = $matches[0];
 			$this->defaultTargetSrc = JRoute::_($this->editUri . '&id=' . (int) $this->targetId);
+			$this->form->setValue('itemlanguage', '', $this->targetLanguage . '|' . $this->targetId);
 		}
 
 		// We don't need toolbar in the modal window.
