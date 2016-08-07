@@ -282,7 +282,7 @@ class AssociationsHelper extends JHelperContent
 	}
 
 	/**
-	 * Get the associated language flags Html.
+	 * Get the associated language edit links Html.
 	 *
 	 * @param   JRegistry  $component  Component properties.
 	 * @param   integer    $itemId     Item id.
