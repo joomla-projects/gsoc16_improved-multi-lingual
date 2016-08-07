@@ -337,6 +337,10 @@ class AssociationsHelper extends JHelperContent
 				throw new Exception($e->getMessage(), 500, $e);
 			}
 		}
+		else
+		{
+			$items = array();
+		}
 
 		// Get all content languages.
 		$query = $db->getQuery(true)
