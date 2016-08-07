@@ -368,6 +368,7 @@ class AssociationsHelper extends JHelperContent
 					$additional = '';
 				}
 				$labelClass = 'label label-success'; 
+				$target     = $langCode . ':' . $items[$langCode]->id;
 			}
 			else
 			{
@@ -375,13 +376,14 @@ class AssociationsHelper extends JHelperContent
 				$title      = JText::_('COM_ASSOCIATIONS_ADD_NEW_ASSOCIATION');
 				$additional = '';
 				$labelClass = 'label'; 
+				$target     = $langCode . ':0';
 			}
 
 			// Generate item Html.
 			$text      = strtoupper($language->sef);
 			$langImage = JHtml::_('image', 'mod_languages/' . $language->image . '.gif', $language->title, array('title' => $language->title), true);
 			$tooltip   = implode(' ', array($langImage, $title, $additional));
-			$url       = JRoute::_('index.php?option=com_associations&view=association&layout=edit&component=' . $component->key . '&task=association.edit&id=' . $itemId . '&targetlanguage=' . $langCode);
+			$url       = JRoute::_('index.php?option=com_associations&view=association&layout=edit&component=' . $component->key . '&task=association.edit&id=' . $itemId . '&target=' . $target);
 
 			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $url, null, 'hasTooltip ' . $labelClass);
 		}
