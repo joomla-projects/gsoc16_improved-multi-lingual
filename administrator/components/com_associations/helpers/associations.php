@@ -233,6 +233,7 @@ class AssociationsHelper extends JHelperContent
 			// Component fields
 			// @todo This need should be checked hardcoding.
 			$cp[$key]->fields                   = new Registry;
+			$cp[$key]->fields->id               = isset($cp[$key]->tableFields['id']) ? 'id' : null;
 			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['name']) ? 'name' : null;
 			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['title']) ? 'title' : $cp[$key]->fields->title;
 			$cp[$key]->fields->alias            = isset($cp[$key]->tableFields['alias']) ? 'alias' : null;
@@ -278,6 +279,113 @@ class AssociationsHelper extends JHelperContent
 		}
 
 		return $cp[$key];
+	}
+
+	/**
+	 * Get the associated language flags Html.
+	 *
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   integer    $itemId     Item id.
+	 *
+	 * @return  string  The language HTML
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationHtmlList($component, $itemId)
+	{
+		$db = JFactory::getDbo();
+
+		// Get the associations.
+		$associations = JLanguageAssociations::getAssociations($component->realcomponent, $component->dbtable, $component->associations->context, $itemId, 'id', $component->fields->alias, $component->fields->catid);
+
+		// if associations exist get their data.
+		if ($associations)
+		{
+			foreach ($associations as $tag => $associated)
+			{
+				$associations[$tag] = (int) $associated->id;
+			}
+
+			// Get the associated items.
+			$query = $db->getQuery(true)
+				->select($db->quoteName('a.' . $component->fields->id, 'id'))
+				->select($db->quoteName('a.' . $component->fields->language, 'language'))
+				->select($db->quoteName('a.' . $component->fields->title, 'title'))
+				->from($db->quoteName($component->dbtable, 'a'))
+				->where($db->quoteName('a.' . $component->fields->id) . ' IN (' . implode(', ', array_values($associations)) . ')');
+
+			if (!is_null($component->fields->catid))
+			{
+				$query->select($db->quoteName('c.title', 'category_title'))
+					->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
+			}
+
+			if (!is_null($component->fields->menutype))
+			{
+				$query->select($db->quoteName('mt.title', 'menu_title'))
+					->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
+			}
+
+			$db->setQuery($query);
+
+			try
+			{
+				$items = $db->loadObjectList($component->fields->language);
+			}
+			catch (RuntimeException $e)
+			{
+				throw new Exception($e->getMessage(), 500, $e);
+			}
+		}
+
+		// Get all content languages.
+		$query = $db->getQuery(true)
+			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title')))
+			->from($db->quoteName('#__languages'))
+			->order($db->quoteName('ordering') . ' ASC');
+		$db->setQuery($query);
+
+		$languages = $db->loadObjectList('lang_code');
+
+		// Create associatied items list.
+		foreach ($languages as $langCode => $language)
+		{
+			// Get html parameters.
+			if (isset($items[$langCode]))
+			{
+				$title       = $items[$langCode]->title;
+				if (isset($items[$langCode]->category_title))
+				{
+					$additional = '<br/>(' . $items[$langCode]->category_title . ')';
+				}
+				elseif (isset($items[$langCode]->menu_title))
+				{
+					$additional = '<br/>(' . $items[$langCode]->menu_title . ')';
+				}
+				else
+				{
+					$additional = '';
+				}
+				$labelClass = 'label label-success'; 
+			}
+			else
+			{
+				$items[$langCode] = new stdClass;
+				$title      = JText::_('COM_ASSOCIATIONS_ADD_NEW_ASSOCIATION');
+				$additional = '';
+				$labelClass = 'label'; 
+			}
+
+			// Generate item Html.
+			$text      = strtoupper($language->sef);
+			$langImage = JHtml::_('image', 'mod_languages/' . $language->image . '.gif', $language->title, array('title' => $language->title), true);
+			$tooltip   = implode(' ', array($langImage, $title, $additional));
+			$url       = JRoute::_('index.php?option=com_associations&view=association&layout=edit&component=' . $component->key . '&task=association.edit&id=' . $itemId . '&targetlanguage=' . $langCode);
+
+			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $url, null, 'hasTooltip ' . $labelClass);
+		}
+
+		return JLayoutHelper::render('joomla.content.associations', $items);
 	}
 
 	/**
