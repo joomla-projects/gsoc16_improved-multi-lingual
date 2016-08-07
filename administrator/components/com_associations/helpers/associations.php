@@ -293,7 +293,8 @@ class AssociationsHelper extends JHelperContent
 	 */
 	public static function getAssociationHtmlList($component, $itemId)
 	{
-		$db = JFactory::getDbo();
+		$db    = JFactory::getDbo();
+		$items = array();
 
 		// Get the associations.
 		$associations = JLanguageAssociations::getAssociations($component->realcomponent, $component->dbtable, $component->associations->context, $itemId, 'id', $component->fields->alias, $component->fields->catid);
@@ -336,10 +337,6 @@ class AssociationsHelper extends JHelperContent
 			{
 				throw new Exception($e->getMessage(), 500, $e);
 			}
-		}
-		else
-		{
-			$items = array();
 		}
 
 		// Get all content languages.
