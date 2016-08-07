@@ -73,18 +73,17 @@ class AssociationsViewAssociations extends JViewLegacy
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_ERROR_NO_ASSOC'), 'warning');
 		}
-		elseif ($this->state->get('component') == '' || $this->state->get('language') == '')
+		elseif ($this->state->get('component') == '')
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_NOTICE_NO_SELECTORS'), 'notice');
 		}
 		else
 		{
-			$this->component  = AssociationsHelper::getComponentProperties($this->state->get('component'));
+			$this->component = AssociationsHelper::getComponentProperties($this->state->get('component'));
 
 			// Dynamic filter form.
 			// This selectors doesn't have to activate the filter bar.
 			unset($this->activeFilters['component']);
-			unset($this->activeFilters['language']);
 			
 			// Remove filters options depending on selected component.
 			if (is_null($this->component) || is_null($this->component->fields->published))
@@ -96,6 +95,11 @@ class AssociationsViewAssociations extends JViewLegacy
 			{
 				unset($this->activeFilters['category_id']);
 				$this->filterForm->removeField('category_id', 'filter');
+			}
+			if (is_null($this->component) || is_null($this->component->fields->language))
+			{
+				unset($this->activeFilters['language']);
+				$this->filterForm->removeField('language', 'filter');
 			}
 			if (is_null($this->component) || is_null($this->component->fields->menutype))
 			{
