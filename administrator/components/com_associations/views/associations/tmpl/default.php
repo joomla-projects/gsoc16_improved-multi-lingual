@@ -128,7 +128,7 @@ $iconStates       = array(
 						<?php echo $item->language_title ? JHtml::_('image', 'mod_languages/' . $item->language_image . '.gif', $item->language_title, array('title' => $item->language_title), true) . '&nbsp;' . $this->escape($item->language_title) : JText::_('JUNDEFINED'); ?>
 					</td>
 					<td>
-						<?php echo AssociationsHelper::getAssociationHtmlList($this->component, (int) $item->id); ?>
+						<?php echo AssociationsHelper::getAssociationHtmlList($this->component, (int) $item->id, $item->language); ?>
 					</td>
 					<?php if (!is_null($this->component->fields->menutype)) : ?>
 						<td class="small">
