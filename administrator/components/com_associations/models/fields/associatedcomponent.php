@@ -100,7 +100,8 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			// Check if component uses categories with associations. Add category option to select box if so.
 			if ($cp->associations->supportCategories)
 			{
-				$options[$cp->title][] = JHtml::_('select.option', 'com_categories.category:' . $cp->component, JText::_($cp->component . '_CATEGORIES'));
+				$languageKey           = JText::_(strtoupper($cp->realcomponent) . '_CATEGORIES');
+				$options[$cp->title][] = JHtml::_('select.option', 'com_categories.category:' . $cp->realcomponent, $languageKey);
 			}
 		}
 
