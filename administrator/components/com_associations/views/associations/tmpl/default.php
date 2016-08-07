@@ -59,7 +59,7 @@ $iconStates       = array(
 						<?php echo JHtml::_('searchtools.sort', 'JGLOBAL_TITLE', 'title', $listDirn, $listOrder); ?>
 					</th>
 					<th width="15%" class="nowrap">
-						<?php echo JText::_('JGRID_HEADING_LANGUAGE'); ?>
+						<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_LANGUAGE', 'language_title', $listDirn, $listOrder); ?>
 					</th>
 					<th width="5%" class="nowrap">
 						<?php echo JHtml::_('searchtools.sort', 'COM_ASSOCIATIONS_HEADING_ASSOCIATION', 'association', $listDirn, $listOrder); ?>
@@ -88,8 +88,8 @@ $iconStates       = array(
 			</tfoot>
 			<tbody>
 			<?php foreach ($this->items as $i => $item) :
-				$canEdit    = AssociationsHelper::allowEdit($this->component, $item);
-				$canCheckin = $canManageCheckin || AssociationsHelper::allowCheckActions($this->component, $item);
+				$canEdit     = AssociationsHelper::allowEdit($this->component, $item);
+				$canCheckin  = $canManageCheckin || AssociationsHelper::allowCheckActions($this->component, $item);
 				?>
 				<tr class="row<?php echo $i % 2; ?>">
 					<td class="center">
