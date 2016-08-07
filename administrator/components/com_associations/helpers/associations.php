@@ -365,11 +365,11 @@ class AssociationsHelper extends JHelperContent
 
 				if (isset($items[$langCode]->category_title))
 				{
-					$additional = '<br/>(' . $items[$langCode]->category_title . ')';
+					$additional = '<br/>' . JText::_('JCATEGORY') . ': ' . $items[$langCode]->category_title;
 				}
 				elseif (isset($items[$langCode]->menu_title))
 				{
-					$additional = '<br/>(' . $items[$langCode]->menu_title . ')';
+					$additional = '<br/>' . JText::_('COM_ASSOCIATIONS_HEADING_MENUTYPE') . ': ' . $items[$langCode]->menu_title;
 				}
 				else
 				{
