@@ -22,6 +22,11 @@ if ($componentKey = JFactory::getApplication()->input->get('component', '', 'str
 {
 	$cp = AssociationsHelper::getComponentProperties($componentKey);
 
+	if (!$cp->enabled)
+	{
+		throw new Exception(JText::_('JLIB_APPLICATION_ERROR_COMPONENT_NOT_FOUND') . ' ' . $cp->realcomponent, 404);
+	}
+
 	if (!$cp->associations->support)
 	{
 		throw new Exception(JText::_('COM_ASSOCIATIONS_COMPONENT_NOT_SUPPORTED') . ' ' . $cp->realcomponent, 404);
