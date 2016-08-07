@@ -88,8 +88,8 @@ $iconStates       = array(
 			</tfoot>
 			<tbody>
 			<?php foreach ($this->items as $i => $item) :
-				$canEdit     = AssociationsHelper::allowEdit($this->component, $item);
-				$canCheckin  = $canManageCheckin || AssociationsHelper::allowCheckActions($this->component, $item);
+				$canEdit    = AssociationsHelper::allowEdit($this->component, $item);
+				$canCheckin = $canManageCheckin || AssociationsHelper::allowCheckActions($this->component, $item);
 				?>
 				<tr class="row<?php echo $i % 2; ?>">
 					<td class="center">
