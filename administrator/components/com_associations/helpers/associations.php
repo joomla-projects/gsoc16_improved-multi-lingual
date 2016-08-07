@@ -349,7 +349,13 @@ class AssociationsHelper extends JHelperContent
 
 		$languages = $db->loadObjectList('lang_code');
 
-		// Create associatied items list.
+		// Load item table for ACL checks.
+		$table = clone $component->table;
+		$table->load($itemId);
+		$canEditReference = self::allowEdit($component, $table);
+		$canCreate        = self::allowAdd($component);
+
+		// Create associated items list.
 		foreach ($languages as $langCode => $language)
 		{
 			// Don't do for the reference language.
@@ -378,6 +384,8 @@ class AssociationsHelper extends JHelperContent
 
 				$labelClass = 'label label-success'; 
 				$target     = $langCode . ':' . $items[$langCode]->id . ':edit';
+				$table->load($items[$langCode]->id);
+				$allow      = $canEditReference && self::allowEdit($component, $table);
 			}
 			else
 			{
@@ -386,6 +394,7 @@ class AssociationsHelper extends JHelperContent
 				$additional = '';
 				$labelClass = 'label'; 
 				$target     = $langCode . ':0:add';
+				$allow      = $canCreate;
 			}
 
 			// Generate item Html.
@@ -394,7 +403,7 @@ class AssociationsHelper extends JHelperContent
 			$tooltip   = implode(' ', array($langImage, $title, $additional));
 			$url       = JRoute::_('index.php?option=com_associations&view=association&layout=edit&component=' . $component->key . '&task=association.edit&id=' . $itemId . '&target=' . $target);
 
-			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $url, null, 'hasTooltip ' . $labelClass);
+			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $allow ? $url : '', null, 'hasTooltip ' . $labelClass);
 		}
 
 		return JLayoutHelper::render('joomla.content.associations', $items);
