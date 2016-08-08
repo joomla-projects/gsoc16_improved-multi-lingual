@@ -49,7 +49,7 @@ class JTableMenu extends JTableNested
 	 */
 	public function __construct(JDatabaseDriver $db)
 	{
-		parent::__construct('#__menu', 'id', $db);
+		parent::__construct('#__menu', $this->fieldsMapping['id'], $db);
 
 		// Set the default access level.
 		$this->access = (int) JFactory::getConfig()->get('access');
