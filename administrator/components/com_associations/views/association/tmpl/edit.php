@@ -87,12 +87,12 @@ $options = array(
 					<?php echo $this->form->getInput('itemlanguage'); ?>
 				</div>
 				<iframe id="target-association" name="target-association"
-					src=""
+					src="<?php echo $this->defaultTargetSrc; ?>"
 					height="100%" width="400px" scrolling="no"
-					data-action=""
+					data-action="<?php echo $this->targetAction; ?>"
 					data-item="<?php echo $this->component->item; ?>"
-					data-id="0"
-					data-language=""
+					data-id="<?php echo $this->targetId; ?>"
+					data-language="<?php echo $this->targetLanguage; ?>"
 					data-editurl="<?php echo JRoute::_($this->editUri); ?>">
 				</iframe>
 			</div>
