@@ -19,6 +19,28 @@ use Joomla\Registry\Registry;
 class JTableMenu extends JTableNested
 {
 	/**
+	 * Mapping of most used fields in the table.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $fieldsMapping = array(
+		'id'               => 'id',
+		'title'            => 'title',
+		'alias'            => 'alias',
+		'published'        => 'published',
+		'access'           => 'access',
+		'language'         => 'language',
+		'catid'            => null,
+		'menutype'         => 'menutype',
+		'ordering'         => 'lft',
+		'level'            => 'level',
+		'created_by'       => null,
+		'checked_out'      => 'checked_out',
+		'checked_out_time' => 'checked_out_time',
+	);
+
+	/**
 	 * Constructor
 	 *
 	 * @param   JDatabaseDriver  $db  Database driver object.
