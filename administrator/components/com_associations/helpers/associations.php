@@ -310,9 +310,17 @@ class AssociationsHelper extends JHelperContent
 		$items = array();
 
 		// Get the associations.
-		$associations = JLanguageAssociations::getAssociations($component->realcomponent, $component->dbtable, $component->associations->context, $itemId, $component->fields->id, $component->fields->alias, $component->fields->catid);
+		$associations = JLanguageAssociations::getAssociations(
+			$component->realcomponent,
+			$component->dbtable,
+			$component->associations->context,
+			$itemId,
+			$component->fields->id,
+			$component->fields->alias,
+			$component->fields->catid
+		);
 
-		// if associations exist get their data.
+		// If associations exist get their data.
 		if ($associations)
 		{
 			foreach ($associations as $tag => $associated)
@@ -413,7 +421,8 @@ class AssociationsHelper extends JHelperContent
 			$text      = strtoupper($language->sef);
 			$langImage = JHtml::_('image', 'mod_languages/' . $language->image . '.gif', $language->title, array('title' => $language->title), true);
 			$tooltip   = implode(' ', array($langImage, $title, $additional));
-			$url       = JRoute::_('index.php?option=com_associations&view=association&layout=edit&component=' . $component->key . '&task=association.edit&id=' . $itemId . '&target=' . $target);
+			$url       = JRoute::_('index.php?option=com_associations&view=association&layout=edit&component='
+				. $component->key . '&task=association.edit&id=' . $itemId . '&target=' . $target);
 
 			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $allow ? $url : '', null, 'hasTooltip ' . $labelClass);
 		}
