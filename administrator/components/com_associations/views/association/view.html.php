@@ -99,7 +99,8 @@ class AssociationsViewAssociation extends JViewLegacy
 			$this->targetAction     = $matches[2];
 			$this->targetId         = $matches[1];
 			$this->targetLanguage   = $matches[0];
-			$this->defaultTargetSrc = JRoute::_($this->editUri . '&task= ' . $this->component->item . '.' . $this->targetAction . ' &id=' . (int) $this->targetId);
+			$task                   = $this->component->item . '.' . $this->targetAction;
+			$this->defaultTargetSrc = JRoute::_($this->editUri . '&task= ' . $task . ' &id=' . (int) $this->targetId);
 			$this->form->setValue('itemlanguage', '', $this->targetLanguage . ':' . $this->targetId . ':' . $this->targetAction);
 		}
 
