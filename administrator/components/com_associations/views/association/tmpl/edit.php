@@ -53,6 +53,7 @@ $input   = $this->app->input;
 $options = array(
 			'layout'            => $input->get('layout', '', 'string'),
 			'component'         => $this->component->key,
+			'referencelanguage' => $input->get('referencelanguage', '', 'string'),
 			'id'                => $this->referenceId,
 		);
 ?>
@@ -69,8 +70,10 @@ $options = array(
 			<div class="inner-panel">
 				<h3><?php echo JText::_('COM_ASSOCIATIONS_REFERENCE_ITEM'); ?></h3>
 				<iframe id="reference-association" name="reference-association"
-					src="<?php echo JRoute::_($this->editUri . '&id=' . (int) $this->referenceId); ?>"
+					src="<?php echo JRoute::_($this->editUri . '&task=' . $this->component->item . '.edit&id=' . (int) $this->referenceId); ?>"
 					height="100%" width="400px" scrolling="no"
+					data-action="edit"
+					data-item="<?php echo $this->component->item; ?>"
 					data-id="<?php echo $this->referenceId; ?>"
 					data-language="<?php echo $this->referenceLanguage; ?>">
 				</iframe>
@@ -84,11 +87,13 @@ $options = array(
 					<?php echo $this->form->getInput('itemlanguage'); ?>
 				</div>
 				<iframe id="target-association" name="target-association"
-					src="<?php echo $this->defaultTargetSrc; ?>"
+					src=""
 					height="100%" width="400px" scrolling="no"
-					data-id="<?php echo $this->targetId; ?>"
-					data-language="<?php echo $this->targetLanguage; ?>"
-					data-editurl="<?php echo JRoute::_($this->editUri . '&id=' . (int) $this->targetId); ?>">
+					data-action=""
+					data-item="<?php echo $this->component->item; ?>"
+					data-id="0"
+					data-language=""
+					data-editurl="<?php echo JRoute::_($this->editUri); ?>">
 				</iframe>
 			</div>
 		</div>
