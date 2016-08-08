@@ -228,9 +228,6 @@ class AssociationsHelper extends JHelperContent
 			$cp[$key]->dbtable = $cp[$key]->table->get('_tbl');
 
 			// Get the table fields.
-			$cp[$key]->tableFields = $cp[$key]->table->getFields();
-
-			// Get the table fields.
 			$cp[$key]->tableFields = $cp[$key]->table->get('fieldsMapping');
 
 			// Component fields
