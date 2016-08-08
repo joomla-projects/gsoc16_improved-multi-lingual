@@ -19,6 +19,28 @@ use Joomla\Registry\Registry;
 class JTableCategory extends JTableNested
 {
 	/**
+	 * Mapping of most used fields in the table.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $fieldsMapping = array(
+		'id'               => 'id',
+		'title'            => 'title',
+		'alias'            => 'alias',
+		'published'        => 'published',
+		'access'           => 'access',
+		'language'         => 'language',
+		'catid'            => null,
+		'menutype'         => null,
+		'ordering'         => 'lft',
+		'level'            => 'level',
+		'created_by'       => 'created_user_id',
+		'checked_out'      => 'checked_out',
+		'checked_out_time' => 'checked_out_time',
+	);
+
+	/**
 	 * Constructor
 	 *
 	 * @param   JDatabaseDriver  $db  Database driver object.
@@ -27,7 +49,7 @@ class JTableCategory extends JTableNested
 	 */
 	public function __construct(JDatabaseDriver $db)
 	{
-		parent::__construct('#__categories', 'id', $db);
+		parent::__construct('#__categories', $this->fieldsMapping['id'], $db);
 
 		JTableObserverTags::createObserver($this, array('typeAlias' => '{extension}.category'));
 		JTableObserverContenthistory::createObserver($this, array('typeAlias' => '{extension}.category'));
