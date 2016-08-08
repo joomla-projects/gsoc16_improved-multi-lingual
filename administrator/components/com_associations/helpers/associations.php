@@ -418,12 +418,19 @@ class AssociationsHelper extends JHelperContent
 			}
 
 			// Generate item Html.
+			$options   = array(
+				'option'    => 'com_associations',
+				'view'      => 'association',
+				'layout'    => 'edit',
+				'component' => $component->key,
+				'task'      => 'association.edit',
+				'id'        => $itemId,
+				'target'    => $target,
+			);
+			$url       = JRoute::_('index.php?' . http_build_query($options));
 			$text      = strtoupper($language->sef);
 			$langImage = JHtml::_('image', 'mod_languages/' . $language->image . '.gif', $language->title, array('title' => $language->title), true);
 			$tooltip   = implode(' ', array($langImage, $title, $additional));
-			$url       = JRoute::_(
-				'index.php?option=com_associations&view=association&layout=edit&component=' . $component->key . '&task=association.edit&id=' . $itemId . '&target=' . $target
-				);
 
 			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $allow ? $url : '', null, 'hasTooltip ' . $labelClass);
 		}
