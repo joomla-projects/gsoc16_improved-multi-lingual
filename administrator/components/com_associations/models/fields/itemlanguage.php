@@ -82,12 +82,12 @@ class JFormFieldItemLanguage extends JFormFieldList
 					parse_str($associations[$lang->value], $contents);
 					$removeExtra  = explode(":", $contents['id']);
 					$itemId       = $removeExtra[0];
-					$lang->value  = $lang->value . "|" . $itemId;
+					$lang->value  = $lang->value . ':' . $itemId . ':edit';
 				}
 				else
 				{
 					$itemId      = $associations[$lang->value];
-					$lang->value = $lang->value . "|" . $associations[$lang->value];
+					$lang->value = $lang->value . ':' . $associations[$lang->value] . ':edit';
 				}
 
 				// Load item.
@@ -105,7 +105,7 @@ class JFormFieldItemLanguage extends JFormFieldList
 			else
 			{
 				// New item, id = 0 and disabled if user is not allowed to create new items
-				$lang->value  .= '|0';
+				$lang->value  .= ':0:add';
 				$lang->disable = !$canCreate;
 			}
 		}

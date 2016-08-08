@@ -88,7 +88,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 				if ($cp->enabled && $cp->associations->support && $cp->associations->supportItem && !in_array($cp->typeAlias, $typeAliasList))
 				{
 					// Add component option select box.
-					$options[$cp->title][] = JHtml::_('select.option', $cp->typeAlias, $cp->title);
+					$options[$cp->title][] = JHtml::_('select.option', $cp->typeAlias, $cp->itemsTitle);
 
 					array_push($typeAliasList, $cp->typeAlias);
 				}
@@ -100,8 +100,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			// Check if component uses categories with associations. Add category option to select box if so.
 			if ($cp->enabled && $cp->associations->supportCategories)
 			{
-				$languageKey           = JText::_(strtoupper($cp->realcomponent) . '_CATEGORIES');
-				$options[$cp->title][] = JHtml::_('select.option', 'com_categories.category:' . $cp->realcomponent, $languageKey);
+				$options[$cp->title][] = JHtml::_('select.option', 'com_categories.category:' . $cp->realcomponent, $cp->categoriesTitle);
 			}
 		}
 

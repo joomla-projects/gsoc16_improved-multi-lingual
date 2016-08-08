@@ -1,3 +1,8 @@
+/**
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ */
+
 // TO use later?
 //function copyRefToTarget() {
 //	var ref = document.getElementById('reference-association').contentWindow.document.getElementsByName('checkbox');
@@ -62,19 +67,21 @@ jQuery(document).ready(function($) {
 		// Populate the data attributes and load the the edit page in target frame.
 		if (selected != '' && typeof selected !== 'undefined')
 		{
-			target.setAttribute('data-id', selected.split('|')[1]);
-			target.setAttribute('data-language', selected.split('|')[0]);
+			target.setAttribute('data-action', selected.split(':')[2]);
+			target.setAttribute('data-id', selected.split(':')[1]);
+			target.setAttribute('data-language', selected.split(':')[0]);
 
 			// Iframe load start, show Joomla loading layer.
 			Joomla.loadingLayer('show');
 
 			// Load the target frame.
-			target.src = target.getAttribute('data-editurl') + target.getAttribute('data-id');
+			target.src = target.getAttribute('data-editurl') + '&task=' + target.getAttribute('data-item') + '.' + target.getAttribute('data-action') + '&id=' + target.getAttribute('data-id');
 		}
 		// Reset the data attributes and no item to load.
 		else
 		{
 			$('#toolbar-target').hide();
+			target.setAttribute('data-action', '');
 			target.setAttribute('data-id', '0');
 			target.setAttribute('data-language', '');
 			target.src = '';
@@ -122,7 +129,7 @@ jQuery(document).ready(function($) {
 				var referenceId   = reference.getAttribute('data-id');
 				var languageCode  = reference.getAttribute('data-language').replace(/-/, '_');
 				var title         = $(reference).contents().find('#jform_title').val();
-				target = $(this).contents();
+				target            = $(this).contents();
 
 				// - For modal association selectors.
 				target.find('#jform_associations_' + languageCode + '_id').val(referenceId);
@@ -134,10 +141,9 @@ jQuery(document).ready(function($) {
 				chznField.append('<option value=\"'+ referenceId + '\">' + title + '</option>');
 				chznField.val(referenceId).change().chosen();
 
-
 				$('#jform_itemlanguage option').each(function()
 				{
-					var parse = $(this).val().split('|');
+					var parse = $(this).val().split(':');
 
 					if (typeof parse[1] !== 'undefined' && parse[1] !== '0')
 					{
@@ -165,10 +171,11 @@ jQuery(document).ready(function($) {
 				if (targetLoadedId != targetId)
 				{
 					// Refresh the language selector with the new id (used after save).
-					$('#jform_itemlanguage option[value^=\"' + targetLanguage + '|' + targetId + '\"]').val(targetLanguage + '|' + targetLoadedId);
+					$('#jform_itemlanguage option[value^=\"' + targetLanguage + ':' + targetId + ':add\"]').val(targetLanguage + ':' + targetLoadedId + ':edit');
 
 					// Update main frame data-id attribute (used after save).
 					this.setAttribute('data-id', targetLoadedId);
+					this.setAttribute('data-action', 'edit');
 
 					// Update the reference item associations tab.
 					var reference     = document.getElementById('reference-association');

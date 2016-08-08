@@ -178,12 +178,24 @@ class AssociationsHelper extends JHelperContent
 			$lang->load($cp[$key]->component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($cp[$key]->component . '.sys', $cp[$key]->adminPath);
 			$lang->load($cp[$key]->component, JPATH_ADMINISTRATOR) || $lang->load($cp[$key]->component, $cp[$key]->adminPath);
 
+			// Get the translate title for the component.
 			$cp[$key]->title = JText::_($cp[$key]->component);
+
+			// Get the translate title for the component item.
+			$languageKey = strtoupper($cp[$key]->realcomponent) . '_' . strtoupper($cp[$key]->item) . 'S';
+			$cp[$key]->itemsTitle = $lang->hasKey($languageKey) ? JText::_($languageKey) : JText::_($cp[$key]->component);
 
 			// Check if component support categories associations.
 			if ($cp[$key]->component !== 'com_categories')
 			{
 				$cp[$key]->associations->supportCategories = is_callable(array($cp[$key]->associations->gethelper->class, 'getCategoryAssociations'));
+
+				// Get the translate title for the component category item.
+				if ($cp[$key]->associations->supportCategories)
+				{
+					$languageKey = strtoupper($cp[$key]->realcomponent) . '_CATEGORIES';
+					$cp[$key]->categoriesTitle = $lang->hasKey($languageKey) ? JText::_($languageKey) : JText::_('JCATEGORIES');
+				}
 			}
 
 			// If we are fetching only the main component info don't do anything else.
