@@ -293,7 +293,6 @@ class AssociationsHelper extends JHelperContent
 		return $cp[$key];
 	}
 
-
 	/**
 	 * Get the associated language edit links Html.
 	 *
