@@ -19,6 +19,17 @@ use Joomla\Registry\Registry;
 class JTableCategory extends JTableNested
 {
 	/**
+	 * Mapping of column alias.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $_columnAlias = array(
+		'ordering'   => 'lft',
+		'created_by' => 'created_user_id',
+	);
+
+	/**
 	 * Constructor
 	 *
 	 * @param   JDatabaseDriver  $db  Database driver object.
