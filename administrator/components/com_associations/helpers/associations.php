@@ -351,14 +351,7 @@ class AssociationsHelper extends JHelperContent
 
 			$db->setQuery($query);
 
-			try
-			{
-				$items = $db->loadObjectList($component->fields->language);
-			}
-			catch (RuntimeException $e)
-			{
-				throw new Exception($e->getMessage(), 500, $e);
-			}
+			$items = $db->loadObjectList($component->fields->language);
 		}
 
 		// Get all content languages.
@@ -434,6 +427,7 @@ class AssociationsHelper extends JHelperContent
 
 			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $allow && $addLink ? $url : '', null, 'hasTooltip ' . $labelClass);
 		}
+
 		return JLayoutHelper::render('joomla.content.associations', $items);
 	}
 
