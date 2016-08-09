@@ -229,7 +229,7 @@ class AssociationsHelper extends JHelperContent
 				return $cp[$key];
 			}
 
-			// Get Item type alias, Asset column key and Associations context key.
+			// Get Item type alias, asset column key and Associations context key.
 			$cp[$key]->typeAlias             = !is_null($cp[$key]->extension) ? 'com_categories.category' : $cp[$key]->model->get('typeAlias');
 			$cp[$key]->assetKey              = !is_null($cp[$key]->extension) ? $cp[$key]->realcomponent . '.category' : $cp[$key]->typeAlias;
 			$cp[$key]->associations->context = $cp[$key]->model->get('associationsContext');
@@ -239,29 +239,30 @@ class AssociationsHelper extends JHelperContent
 			$cp[$key]->table   = $cp[$key]->model->getTable();
 			$cp[$key]->dbtable = $cp[$key]->table->get('_tbl');
 
-			// Get the table fields.
+			// Get the database table fields.
 			$cp[$key]->tableFields = $cp[$key]->table->getFields();
+			$cp[$key]->fields      = new Registry;
+			$fields                = array(
+				'id',
+				'title',
+				'alias',
+				'ordering',
+				'menutype',
+				'level',
+				'catid',
+				'language',
+				'access',
+				'published',
+				'created_by',
+				'checked_out',
+				'checked_out_time',
+			);
 
-			// Component fields
-			// @todo This need should be checked hardcoding.
-			$cp[$key]->fields                   = new Registry;
-			$cp[$key]->fields->id               = isset($cp[$key]->tableFields['id']) ? 'id' : null;
-			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['name']) ? 'name' : null;
-			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['title']) ? 'title' : $cp[$key]->fields->title;
-			$cp[$key]->fields->alias            = isset($cp[$key]->tableFields['alias']) ? 'alias' : null;
-			$cp[$key]->fields->ordering         = isset($cp[$key]->tableFields['ordering']) ? 'ordering' : null;
-			$cp[$key]->fields->ordering         = isset($cp[$key]->tableFields['lft']) ? 'lft' : $cp[$key]->fields->ordering;
-			$cp[$key]->fields->menutype         = isset($cp[$key]->tableFields['menutype']) ? 'menutype' : null;
-			$cp[$key]->fields->level            = isset($cp[$key]->tableFields['level']) ? 'level' : null;
-			$cp[$key]->fields->catid            = isset($cp[$key]->tableFields['catid']) ? 'catid' : null;
-			$cp[$key]->fields->language         = isset($cp[$key]->tableFields['language']) ? 'language' : null;
-			$cp[$key]->fields->access           = isset($cp[$key]->tableFields['access']) ? 'access' : null;
-			$cp[$key]->fields->published        = isset($cp[$key]->tableFields['state']) ? 'state' : null;
-			$cp[$key]->fields->published        = isset($cp[$key]->tableFields['published']) ? 'published' : $cp[$key]->fields->published;
-			$cp[$key]->fields->created_by       = isset($cp[$key]->tableFields['created_user_id']) ? 'created_user_id' : null;
-			$cp[$key]->fields->created_by       = isset($cp[$key]->tableFields['created_by']) ? 'created_by' : $cp[$key]->fields->created_by;
-			$cp[$key]->fields->checked_out      = isset($cp[$key]->tableFields['checked_out']) ? 'checked_out' : null;
-			$cp[$key]->fields->checked_out_time = isset($cp[$key]->tableFields['checked_out_time']) ? 'checked_out_time' : null;
+			foreach($fields as $field)
+			{
+				$tableField                 = $cp[$key]->table->getColumnAlias($field);
+				$cp[$key]->fields->{$field} = isset($cp[$key]->tableFields[$tableField]) ? $tableField : null;
+			}
 
 			// Disallow ordering according to component.
 			$cp[$key]->excludeOrdering = array();
