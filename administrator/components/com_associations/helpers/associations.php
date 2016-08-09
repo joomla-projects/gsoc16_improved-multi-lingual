@@ -309,6 +309,7 @@ class AssociationsHelper extends JHelperContent
 	{
 		$db    = JFactory::getDbo();
 		$items = array();
+
 		// Get the associations.
 		$associations = JLanguageAssociations::getAssociations(
 			$component->realcomponent,
