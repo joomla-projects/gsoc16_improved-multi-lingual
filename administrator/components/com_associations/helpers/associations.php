@@ -299,7 +299,7 @@ class AssociationsHelper extends JHelperContent
 	 * @param   JRegistry  $component     Component properties.
 	 * @param   integer    $itemId        Item id.
 	 * @param   string     $itemLanguage  Item language code.
-	 * @param   boolena    $addLink       True for adding edit links. False for just text.
+	 * @param   boolean    $addLink       True for adding edit links. False for just text.
 	 *
 	 * @return  string  The language HTML
 	 *
