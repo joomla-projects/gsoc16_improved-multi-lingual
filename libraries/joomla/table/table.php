@@ -54,6 +54,28 @@ abstract class JTable extends JObject implements JObservableInterface, JTableInt
 	protected $_tbl_keys = array();
 
 	/**
+	 * Mapping of most used fields in the table.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $fieldsMapping = array(
+		'id'               => 'id',
+		'title'            => 'title',
+		'alias'            => 'alias',
+		'published'        => 'published',
+		'access'           => 'access',
+		'language'         => 'language',
+		'catid'            => 'catid',
+		'menutype'         => null,
+		'ordering'         => 'ordering',
+		'level'            => null,
+		'created_by'       => 'created_by',
+		'checked_out'      => 'checked_out',
+		'checked_out_time' => 'checked_out_time',
+	);
+
+	/**
 	 * JDatabaseDriver object.
 	 *
 	 * @var    JDatabaseDriver

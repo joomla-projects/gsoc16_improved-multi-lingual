@@ -20,6 +20,28 @@ use Joomla\Registry\Registry;
 class JTableContent extends JTable
 {
 	/**
+	 * Mapping of most used fields in the table.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $fieldsMapping = array(
+		'id'               => 'id',
+		'title'            => 'title',
+		'alias'            => 'alias',
+		'published'        => 'state',
+		'access'           => 'access',
+		'language'         => 'language',
+		'catid'            => 'catid',
+		'menutype'         => null,
+		'ordering'         => 'ordering',
+		'level'            => null,
+		'created_by'       => 'created_by',
+		'checked_out'      => 'checked_out',
+		'checked_out_time' => 'checked_out_time',
+	);
+
+	/**
 	 * Constructor
 	 *
 	 * @param   JDatabaseDriver  $db  A database connector object
@@ -28,7 +50,7 @@ class JTableContent extends JTable
 	 */
 	public function __construct(JDatabaseDriver $db)
 	{
-		parent::__construct('#__content', 'id', $db);
+		parent::__construct('#__content', $this->fieldsMapping['id'], $db);
 
 		JTableObserverTags::createObserver($this, array('typeAlias' => 'com_content.article'));
 		JTableObserverContenthistory::createObserver($this, array('typeAlias' => 'com_content.article'));

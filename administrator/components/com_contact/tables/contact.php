@@ -19,6 +19,28 @@ use Joomla\Registry\Registry;
 class ContactTableContact extends JTable
 {
 	/**
+	 * Mapping of most used fields in the table.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $fieldsMapping = array(
+		'id'               => 'id',
+		'title'            => 'name',
+		'alias'            => 'alias',
+		'published'        => 'state',
+		'access'           => 'access',
+		'language'         => 'language',
+		'catid'            => 'catid',
+		'menutype'         => null,
+		'ordering'         => 'ordering',
+		'level'            => null,
+		'created_by'       => 'created_by',
+		'checked_out'      => 'checked_out',
+		'checked_out_time' => 'checked_out_time',
+	);
+
+	/**
 	 * Ensure the params and metadata in json encoded in the bind method
 	 *
 	 * @var    array
@@ -35,7 +57,7 @@ class ContactTableContact extends JTable
 	 */
 	public function __construct(&$db)
 	{
-		parent::__construct('#__contact_details', 'id', $db);
+		parent::__construct('#__contact_details', $this->fieldsMapping['id'], $db);
 
 		JTableObserverTags::createObserver($this, array('typeAlias' => 'com_contact.contact'));
 		JTableObserverContenthistory::createObserver($this, array('typeAlias' => 'com_contact.contact'));
