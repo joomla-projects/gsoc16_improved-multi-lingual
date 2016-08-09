@@ -20,6 +20,17 @@ use Joomla\Registry\Registry;
 class JTableContent extends JTable
 {
 	/**
+	 * Mapping of column alias.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $_columnAlias = array(
+		'published'  => 'state',
+		'created_by' => 'created_user_id',
+	);
+
+	/**
 	 * Constructor
 	 *
 	 * @param   JDatabaseDriver  $db  A database connector object
