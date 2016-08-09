@@ -320,6 +320,7 @@ class AssociationsHelper extends JHelperContent
 			$component->fields->alias,
 			$component->fields->catid
 		);
+
 		// If associations exist get their data.
 		if ($associations)
 		{
@@ -327,6 +328,7 @@ class AssociationsHelper extends JHelperContent
 			{
 				$associations[$tag] = (int) $associated->id;
 			}
+
 			// Get the associated items.
 			$query = $db->getQuery(true)
 				->select($db->quoteName('a.' . $component->fields->id, 'id'))
@@ -334,17 +336,21 @@ class AssociationsHelper extends JHelperContent
 				->select($db->quoteName('a.' . $component->fields->title, 'title'))
 				->from($db->quoteName($component->dbtable, 'a'))
 				->where($db->quoteName('a.' . $component->fields->id) . ' IN (' . implode(', ', array_values($associations)) . ')');
+
 			if (!is_null($component->fields->catid))
 			{
 				$query->select($db->quoteName('c.title', 'category_title'))
 					->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
 			}
+
 			if (!is_null($component->fields->menutype))
 			{
 				$query->select($db->quoteName('mt.title', 'menu_title'))
 					->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
 			}
+
 			$db->setQuery($query);
+
 			try
 			{
 				$items = $db->loadObjectList($component->fields->language);
@@ -354,18 +360,24 @@ class AssociationsHelper extends JHelperContent
 				throw new Exception($e->getMessage(), 500, $e);
 			}
 		}
+
 		// Get all content languages.
 		$query = $db->getQuery(true)
 			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title')))
 			->from($db->quoteName('#__languages'))
 			->order($db->quoteName('ordering') . ' ASC');
+
 		$db->setQuery($query);
+
 		$languages = $db->loadObjectList('lang_code');
+
 		// Load item table for ACL checks.
 		$table = clone $component->table;
 		$table->load($itemId);
+
 		$canEditReference = self::allowEdit($component, $table);
 		$canCreate        = self::allowAdd($component);
+
 		// Create associated items list.
 		foreach ($languages as $langCode => $language)
 		{
@@ -374,10 +386,13 @@ class AssociationsHelper extends JHelperContent
 			{
 				continue;
 			}
+
 			// Get html parameters.
 			if (isset($items[$langCode]))
 			{
-				$title = $items[$langCode]->title;
+				$title      = $items[$langCode]->title;
+				$additional = '';
+
 				if (isset($items[$langCode]->category_title))
 				{
 					$additional = '<br/>' . JText::_('JCATEGORY') . ': ' . $items[$langCode]->category_title;
@@ -386,10 +401,7 @@ class AssociationsHelper extends JHelperContent
 				{
 					$additional = '<br/>' . JText::_('COM_ASSOCIATIONS_HEADING_MENUTYPE') . ': ' . $items[$langCode]->menu_title;
 				}
-				else
-				{
-					$additional = '';
-				}
+
 				$labelClass = 'label label-success'; 
 				$target     = $langCode . ':' . $items[$langCode]->id . ':edit';
 				$table->load($items[$langCode]->id);
@@ -404,6 +416,7 @@ class AssociationsHelper extends JHelperContent
 				$target     = $langCode . ':0:add';
 				$allow      = $canCreate;
 			}
+
 			// Generate item Html.
 			$options   = array(
 				'option'    => 'com_associations',
@@ -418,6 +431,7 @@ class AssociationsHelper extends JHelperContent
 			$text      = strtoupper($language->sef);
 			$langImage = JHtml::_('image', 'mod_languages/' . $language->image . '.gif', $language->title, array('title' => $language->title), true);
 			$tooltip   = implode(' ', array($langImage, $title, $additional));
+
 			$items[$langCode]->link = JHtml::_('tooltip', $tooltip, null, null, $text, $allow && $addLink ? $url : '', null, 'hasTooltip ' . $labelClass);
 		}
 		return JLayoutHelper::render('joomla.content.associations', $items);
