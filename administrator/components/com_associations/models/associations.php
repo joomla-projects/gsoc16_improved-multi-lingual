@@ -158,6 +158,9 @@ class AssociationsModelAssociations extends JModelList
 			->select($db->quoteName('a.' . $component->fields->alias, 'alias'))
 			->from($db->quoteName($component->dbtable, 'a'));
 
+		// Prepare the group by clause
+		$groupby = array('a.id', 'a.' . $component->fields->title, 'a.' . $component->fields->language);
+
 		// Select author for ACL checks
 		if (!is_null($component->fields->created_by))
 		{
@@ -173,6 +176,7 @@ class AssociationsModelAssociations extends JModelList
 			// Join over the users.
 			$query->select($db->quoteName('u.name', 'editor'))
 				->join('LEFT', $db->quoteName('#__users', 'u') . ' ON ' . $db->qn('u.id') . ' = ' . $db->qn('a.' . $component->fields->checked_out));
+			$groupby[] = 'u.name';	
 		}
 
 		// Join over the language
@@ -180,6 +184,8 @@ class AssociationsModelAssociations extends JModelList
 			->select($db->quoteName('l.title', 'language_title'))
 			->select($db->quoteName('l.image', 'language_image'))
 			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->qn('l.lang_code') . ' = ' . $db->qn('a.' . $component->fields->language));
+		$groupby[] = 'l.title';
+		$groupby[] = 'l.image';
 
 		// Join over the associations.
 		$query->select('COUNT(' . $db->quoteName('asso2.id') . ') > 1 AS ' . $db->quoteName('association'))
@@ -188,18 +194,7 @@ class AssociationsModelAssociations extends JModelList
 				$db->quoteName('#__associations', 'asso') . ' ON ' . $db->quoteName('asso.id') . ' = ' . $db->quoteName('a.id')
 				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($component->associations->context)
 			)
-			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'))
-			->group($db->quoteName(array('a.id', 
-						     'a.title', 
-						     'a.language',
-						     'u.name',
-						     'l.title',
-						     'l.image',
-						     'c.title',
-						     'ag.title'
-						     )
-						)
-					);
+			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'));
 
 		// If component supports ordering, select the ordering also.
 		if (!is_null($component->fields->ordering))
@@ -225,6 +220,7 @@ class AssociationsModelAssociations extends JModelList
 			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'))
 				->select($db->quoteName('c.title', 'category_title'))
 				->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
+			$groupby[] = 'c.title';
 		}
 
 		// If component supports menu type, select the menu type also.
@@ -234,6 +230,8 @@ class AssociationsModelAssociations extends JModelList
 				->select($db->quoteName('mt.title', 'menutype_title'))
 				->select($db->quoteName('mt.id', 'menutypeid'))
 				->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
+			$groupby[] = 'mt.title';
+			$groupby[] = 'mt.id';
 		}
 
 		// If component supports access level, select the access level also.
@@ -242,6 +240,7 @@ class AssociationsModelAssociations extends JModelList
 			$query->select($db->quoteName('a.' . $component->fields->access, 'access'))
 				->select($db->quoteName('ag.title', 'access_level'))
 				->join('LEFT', $db->quoteName('#__viewlevels', 'ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $component->fields->access));
+			$groupby[] = 'ag.title';
 
 			// Implement View Level Access
 			if (!$user->authorise('core.admin', $component->realcomponent))
@@ -325,6 +324,9 @@ class AssociationsModelAssociations extends JModelList
 					. ' OR ' . $db->quoteName('a.' . $component->fields->alias) . ' LIKE ' . $search . ')');
 			}
 		}
+
+		// Add the group by clause
+		$query->group($db->quoteName($groupby));
 
 		// Add the list ordering clause.
 		$query->order($db->escape($this->getState('list.ordering') . ' ' . $this->getState('list.direction')));
