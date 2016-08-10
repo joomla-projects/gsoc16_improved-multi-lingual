@@ -189,7 +189,17 @@ class AssociationsModelAssociations extends JModelList
 				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($component->associations->context)
 			)
 			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'))
-			->group($db->quoteName(array('a.id', 'title', 'language')));
+			->group($db->quoteName(array('a.id', 
+						     'a.title', 
+						     'a.language',
+						     'u.name',
+						     'l.title',
+						     'l.image',
+						     'c.title',
+						     'ag.title'
+						     )
+						)
+					);
 
 		// If component supports ordering, select the ordering also.
 		if (!is_null($component->fields->ordering))
