@@ -153,15 +153,36 @@ class AssociationsModelAssociations extends JModelList
 		$component = AssociationsHelper::getComponentProperties($this->getState('component'));
 
 		// Main query.
-		$query->select($db->quoteName('a.id'))
+		$query->select($db->quoteName('a.' . $component->fields->id, 'id'))
 			->select($db->quoteName('a.' . $component->fields->title, 'title'))
 			->select($db->quoteName('a.' . $component->fields->alias, 'alias'))
 			->from($db->quoteName($component->dbtable, 'a'));
 
-		// Prepare the group by clause
-		$groupby = array('a.id', 'a.' . $component->fields->title, 'a.' . $component->fields->language);
+		// Join over the language.
+		$query->select($db->quoteName('a.' . $component->fields->language, 'language'))
+			->select($db->quoteName('l.title', 'language_title'))
+			->select($db->quoteName('l.image', 'language_image'))
+			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->qn('l.lang_code') . ' = ' . $db->qn('a.' . $component->fields->language));
 
-		// Select author for ACL checks
+		// Join over the associations.
+		$query->select('COUNT(' . $db->quoteName('asso2.id') . ') > 1 AS ' . $db->quoteName('association'))
+			->join(
+				'LEFT',
+				$db->quoteName('#__associations', 'asso') . ' ON ' . $db->quoteName('asso.id') . ' = ' . $db->quoteName('a.' . $component->fields->id)
+				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($component->associations->context)
+			)
+			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'));
+
+		// Prepare the group by clause.
+		$groupby = array(
+			'a.' . $component->fields->id,
+			'a.' . $component->fields->title,
+			'a.' . $component->fields->language,
+			'l.title',
+			'l.image',
+		);
+
+		// Select author for ACL checks.
 		if (!is_null($component->fields->created_by))
 		{
 			$query->select($db->quoteName('a.' . $component->fields->created_by));
@@ -176,25 +197,9 @@ class AssociationsModelAssociations extends JModelList
 			// Join over the users.
 			$query->select($db->quoteName('u.name', 'editor'))
 				->join('LEFT', $db->quoteName('#__users', 'u') . ' ON ' . $db->qn('u.id') . ' = ' . $db->qn('a.' . $component->fields->checked_out));
-			$groupby[] = 'u.name';	
+
+			$groupby[] = 'u.name';
 		}
-
-		// Join over the language
-		$query->select($db->quoteName('a.' . $component->fields->language, 'language'))
-			->select($db->quoteName('l.title', 'language_title'))
-			->select($db->quoteName('l.image', 'language_image'))
-			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->qn('l.lang_code') . ' = ' . $db->qn('a.' . $component->fields->language));
-		$groupby[] = 'l.title';
-		$groupby[] = 'l.image';
-
-		// Join over the associations.
-		$query->select('COUNT(' . $db->quoteName('asso2.id') . ') > 1 AS ' . $db->quoteName('association'))
-			->join(
-				'LEFT',
-				$db->quoteName('#__associations', 'asso') . ' ON ' . $db->quoteName('asso.id') . ' = ' . $db->quoteName('a.id')
-				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($component->associations->context)
-			)
-			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'));
 
 		// If component supports ordering, select the ordering also.
 		if (!is_null($component->fields->ordering))
@@ -217,19 +222,25 @@ class AssociationsModelAssociations extends JModelList
 		// If component supports categories, select the category also.
 		if (!is_null($component->fields->catid))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'))
-				->select($db->quoteName('c.title', 'category_title'))
+			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'));
+			
+			// Join over the categories.
+			$query->select($db->quoteName('c.title', 'category_title'))
 				->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
+
 			$groupby[] = 'c.title';
 		}
 
 		// If component supports menu type, select the menu type also.
 		if (!is_null($component->fields->menutype))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'))
-				->select($db->quoteName('mt.title', 'menutype_title'))
+			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'));
+			
+			// Join over the menu types.
+			$query->select($db->quoteName('mt.title', 'menutype_title'))
 				->select($db->quoteName('mt.id', 'menutypeid'))
 				->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
+
 			$groupby[] = 'mt.title';
 			$groupby[] = 'mt.id';
 		}
@@ -237,12 +248,15 @@ class AssociationsModelAssociations extends JModelList
 		// If component supports access level, select the access level also.
 		if (!is_null($component->fields->access))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->access, 'access'))
-				->select($db->quoteName('ag.title', 'access_level'))
+			$query->select($db->quoteName('a.' . $component->fields->access, 'access'));
+			
+			// Join over the access levels.
+			$query->select($db->quoteName('ag.title', 'access_level'))
 				->join('LEFT', $db->quoteName('#__viewlevels', 'ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $component->fields->access));
+
 			$groupby[] = 'ag.title';
 
-			// Implement View Level Access
+			// Implement View Level Access.
 			if (!$user->authorise('core.admin', $component->realcomponent))
 			{
 				$query->where('a.' . $component->fields->access . ' IN (' . implode(',', $user->getAuthorisedViewLevels()) . ')');
@@ -250,13 +264,13 @@ class AssociationsModelAssociations extends JModelList
 		}
 
 		// If component is menus we need to remove the root item and the administrator menu.
-		if ($component->dbtable === '#__menu')
+		if ($component->component === 'com_menus')
 		{
-			$query->where($db->quoteName('a.id') . ' > 1')
+			$query->where($db->quoteName('a.' . $component->fields->id) . ' > 1')
 				->where($db->quoteName('a.client_id') . ' = 0');
 		}
 		// If component is categories we need to remove all other component categories.
-		elseif ($component->dbtable === '#__categories')
+		elseif ($component->component === 'com_categories')
 		{
 			$query->where($db->quoteName('a.extension') . ' = ' . $db->quote($component->extension));
 		}
@@ -287,6 +301,7 @@ class AssociationsModelAssociations extends JModelList
 			$categoryTable = JTable::getInstance('Category', 'JTable');
 			$categoryTable->load($categoryId);
 			$baselevel = (int) $categoryTable->level;
+
 			$query->where($db->quoteName('c.lft') . ' >= ' . (int) $categoryTable->lft)
 				->where($db->quoteName('c.rgt') . ' <= ' . (int) $categoryTable->rgt);
 		}
@@ -315,7 +330,7 @@ class AssociationsModelAssociations extends JModelList
 		{
 			if (stripos($search, 'id:') === 0)
 			{
-				$query->where('a.id = ' . (int) substr($search, 3));
+				$query->where($db->quoteName('a.' . $component->fields->id) . ' = ' . (int) substr($search, 3));
 			}
 			else
 			{
