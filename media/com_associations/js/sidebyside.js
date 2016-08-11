@@ -150,6 +150,12 @@ jQuery(document).ready(function($) {
 
 	// Attach behaviour to reference frame load event.
 	$('#reference-association').on('load', function() {
+		// If no tmpl=component, add it
+		if (this.src.indexOf('&tmpl=component') === -1)
+		{
+			this.src += '&tmpl=component';
+		}
+
 		var reference = $(this).contents();
 		// Disable language field.
 		reference.find('#jform_language_chzn').remove();
@@ -189,6 +195,12 @@ jQuery(document).ready(function($) {
 		// We need to check if we are not loading a blank iframe.
 		if (this.getAttribute('src') != '')
 		{
+			// If no tmpl=component, add it
+			if (this.src.indexOf('&tmpl=component') === -1)
+			{
+				this.src += '&tmpl=component';
+			}
+			
 			$('#toolbar-target').show();
 			$('#select-change').removeClass("hidden");
 
