@@ -258,7 +258,7 @@ class AssociationsHelper extends JHelperContent
 				'checked_out_time',
 			);
 
-			foreach($fields as $field)
+			foreach ($fields as $field)
 			{
 				$tableField                 = $cp[$key]->table->getColumnAlias($field);
 				$cp[$key]->fields->{$field} = isset($cp[$key]->tableFields[$tableField]) ? $tableField : null;
