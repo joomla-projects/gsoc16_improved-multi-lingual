@@ -9,6 +9,8 @@
 
 defined("_JEXEC") or die("Restricted access");
 
+JLoader::register('AssociationsHelper', JPATH_ADMINISTRATOR . '/components/com_associations/helpers/associations.php');
+
 /**
  * Associations controller class.
  *
