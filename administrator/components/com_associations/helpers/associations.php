@@ -291,19 +291,38 @@ class AssociationsHelper extends JHelperContent
 	}
 
 	/**
-	 * Get the associated language edit links Html.
+	 * Get all the content languages.
 	 *
-	 * @param   JRegistry  $component     Component properties.
-	 * @param   integer    $itemId        Item id.
-	 * @param   string     $itemLanguage  Item language code.
-	 * @param   boolean    $addLink       True for adding edit links. False for just text.
-	 * @param   boolean    $allLanguages  True for showing all content languages. False only languages with associations.
-	 *
-	 * @return  string  The language HTML
+	 * @return  array  Array of objects all content languages by language code.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function getAssociationHtmlList($component, $itemId, $itemLanguage, $addLink = true, $allLanguages = true)
+	public static function getContentLanguages()
+	{
+		$db = JFactory::getDbo();
+
+		// Get all content languages.
+		$query = $db->getQuery(true)
+			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title', 'published')))
+			->from($db->quoteName('#__languages'))
+			->order($db->quoteName('ordering') . ' ASC');
+
+		$db->setQuery($query);
+
+		return $db->loadObjectList('lang_code');
+	}
+
+	/**
+	 * Get the associated language links.
+	 *
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   integer    $itemId     Item id.
+	 *
+	 * @return  array  Array of objects all associated elements by language code.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationList($component, $itemId)
 	{
 		$db    = JFactory::getDbo();
 		$items = array();
@@ -352,15 +371,31 @@ class AssociationsHelper extends JHelperContent
 			$items = $db->loadObjectList($component->fields->language);
 		}
 
+		return $items;
+	}
+
+	/**
+	 * Get the associated language edit links Html.
+	 *
+	 * @param   JRegistry  $component     Component properties.
+	 * @param   integer    $itemId        Item id.
+	 * @param   string     $itemLanguage  Item language code.
+	 * @param   boolean    $addLink       True for adding edit links. False for just text.
+	 * @param   boolean    $allLanguages  True for showing all content languages. False only languages with associations.
+	 *
+	 * @return  string  The language HTML
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationHtmlList($component, $itemId, $itemLanguage, $addLink = true, $allLanguages = true)
+	{
+		$db    = JFactory::getDbo();
+
+		// Get the associations list for this item.
+		$items = self::getAssociationList($component, $itemId);
+
 		// Get all content languages.
-		$query = $db->getQuery(true)
-			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title')))
-			->from($db->quoteName('#__languages'))
-			->order($db->quoteName('ordering') . ' ASC');
-
-		$db->setQuery($query);
-
-		$languages = $db->loadObjectList('lang_code');
+		$languages = self::getContentLanguages();
 
 		// Load item table for ACL checks.
 		$table = clone $component->table;
