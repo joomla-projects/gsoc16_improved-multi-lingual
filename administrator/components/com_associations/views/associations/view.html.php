@@ -138,9 +138,6 @@ class AssociationsViewAssociations extends JViewLegacy
 			);
 
 			$this->editUri = 'index.php?option=com_associations&view=association&' . http_build_query($linkParameters);
-
-			// Load the current component html helper class.
-			JLoader::register($this->component->associations->htmlhelper->class, $this->component->associations->htmlhelper->file);
 		}
 
 		// Check for errors.
