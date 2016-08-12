@@ -21,302 +21,342 @@ class AssociationsHelper extends JHelperContent
 	public static $extension = 'com_associations';
 
 	/**
-	 * Get component properties based on a string.
+	 * Get item context based on the item key.
 	 *
-	 * @param   string  $key  The component/item/extension identifier.
+	 * @param   string  $key  The item identifier.
 	 *
-	 * @return  JRegistry  The component properties.
+	 * @return  JRegistry  The item properties.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function getComponentProperties($key = '')
+	public static function getItemTypeProperties($key = '')
 	{
-		static $cp = array();
+		static $it = array();
 
 		if (empty($key))
 		{
 			return null;
 		}
 
-		if (!isset($cp[$key]))
+		if (!isset($it[$key]))
 		{
-			$cp[$key] = new Registry;
+			$it[$key] = new Registry;
 
-			// Get component info from key.
-			$matches = preg_split("#[\.\:]+#", $key);
+			// Get component item type info from key.
+			$matches = preg_split("#[\.]+#", $key);
 
-			$cp[$key]->key                              = $key;
-			$cp[$key]->component                        = $matches[0];
-			$cp[$key]->item                             = isset($matches[1]) ? $matches[1] : null;
-			$cp[$key]->extension                        = isset($matches[2]) ? $matches[2] : null;
-			$cp[$key]->realcomponent                    = !is_null($cp[$key]->extension) ? $cp[$key]->extension : $cp[$key]->component;
-			$cp[$key]->sitePath                         = JPATH_SITE . '/components/' . $cp[$key]->realcomponent;
-			$cp[$key]->adminPath                        = JPATH_ADMINISTRATOR . '/components/' . $cp[$key]->component;
-			$cp[$key]->enabled                          = true;
-			$cp[$key]->associations                     = new Registry;
-			$cp[$key]->associations->support            = true;
-			$cp[$key]->associations->supportItem        = false;
-			$cp[$key]->associations->supportCategories  = false;
+			$it[$key]->key                             = $key;
+			$it[$key]->item                            = $matches[count($matches) - 1];
+			$it[$key]->realcomponent                   = $matches[0];
+			$it[$key]->component                       = $it[$key]->item === 'category' ? 'com_categories' : $it[$key]->realcomponent;
+			$it[$key]->extension                       = $it[$key]->item === 'category' ? preg_replace('#\.' . $it[$key]->item . '$#', '', $key) : null;
+			$it[$key]->adminPath                       = JPATH_ADMINISTRATOR . '/components/' . $it[$key]->component;
+			$it[$key]->componentEnabled                = true;
+			$it[$key]->associations                    = new Registry;
+			$it[$key]->associations->support           = false;
+			$it[$key]->associations->supportCategories = false;
 
-			// If component is disabled or not installed, component does not support associations.
+			// If component of the item type is disabled or not installed, item type does not support associations.
 			$db = JFactory::getDbo();
 
 			$query = $db->getQuery(true)
 				->select($db->quoteName('extension_id'))
 				->from($db->quoteName('#__extensions'))
-				->where($db->quoteName('element') . ' = ' . $db->quote($cp[$key]->realcomponent))
+				->where($db->quoteName('element') . ' = ' . $db->quote($it[$key]->realcomponent))
 				->where($db->quoteName('type') . ' = ' . $db->quote('component'))
 				->where($db->quoteName('enabled') . ' = 1');
 
 			if (!$db->setQuery($query)->loadResult())
 			{
-				$cp[$key]->enabled = false;
+				$it[$key]->componentEnabled = false;
 
-				return $cp[$key];
+				return $it[$key];
 			}
 
-			// Check for component model and his properties.
-			$componentName = ucfirst(substr($cp[$key]->component, 4));
-			$modelsPath    = $cp[$key]->adminPath . '/models';
+			// Check for component item type model and his properties.
+			$componentName = ucfirst(substr($it[$key]->component, 4));
+			$modelsPath    = $it[$key]->adminPath . '/models';
 
-			// If component models path does not exist, component does not support associations.
+			// If component item type models path does not exist, item type does not support associations.
 			if (!is_dir($modelsPath))
 			{
-				$cp[$key]->associations->support = false;
-
-				return $cp[$key];
+				return $it[$key];
 			}
 
-			// Association get items Helper.
-			$cp[$key]->associations->gethelper = new Registry;
+			// Check if component item type supports associations.
+			$itemName = ucfirst($it[$key]->item);
 
-			if (file_exists($cp[$key]->sitePath . '/helpers/association.php'))
+			JLoader::register($componentName . 'Model' . $itemName, $modelsPath . '/' . $it[$key]->item . '.php');
+			$it[$key]->model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
+
+			// If component item type model cannot loaded, or associations properties does not exist, item type does not support associations.
+			$it[$key]->associations->support = $it[$key]->model && $it[$key]->model->get('associationsContext');
+
+			// Get item type alias and asset column key.
+			$it[$key]->assetKey  = $it[$key]->item === 'category' ? $it[$key]->extension . '.category' : $it[$key]->model->get('typeAlias');
+
+			if ($it[$key]->item !== 'category')
 			{
-				$cp[$key]->associations->gethelper->file   = $cp[$key]->sitePath . '/helpers/association.php';
-
-				// For items.
-				if (is_null($cp[$key]->extension))
-				{
-					$cp[$key]->associations->gethelper->class  = $componentName . 'HelperAssociation';
-					$cp[$key]->associations->gethelper->method = 'getAssociations';
-
-				}
-				// For categories.
-				else
-				{
-					$cp[$key]->associations->gethelper->class  = ucfirst(substr($cp[$key]->realcomponent, 4)) . 'HelperAssociation';
-					$cp[$key]->associations->gethelper->method = 'getCategoryAssociations';
-				}
-			}
-			// Exclusive for com_menus. @todo menus should be uniformized.
-			elseif ($cp[$key]->component === 'com_menus')
-			{
-				$cp[$key]->associations->gethelper->class  = 'MenusHelper';
-				$cp[$key]->associations->gethelper->file   = $cp[$key]->adminPath . '/helpers/menus.php';
-				$cp[$key]->associations->gethelper->method = 'getAssociations';
+				$it[$key]->categoryContext = $it[$key]->model->get('categoryContext') ? $it[$key]->model->get('categoryContext') : $it[$key]->realcomponent;
 			}
 
-			// If association get items helper class does not exists, component does not support associations.
-			if (!isset($cp[$key]->associations->gethelper->class))
-			{
-				$cp[$key]->associations->support = false;
+			// Get the associations context key.
+			$it[$key]->associations->context = $it[$key]->model->get('associationsContext');
 
-				return $cp[$key];
+			// Get the database table.
+			$it[$key]->model->addTablePath($it[$key]->adminPath . '/tables');
+			try
+			{
+				$it[$key]->table = $it[$key]->model->getTable();
+			}
+			catch (Exception $e)
+			{
+				unset($it[$key]->model);
+
+				return $it[$key];
+			}
+			$it[$key]->dbtable = $it[$key]->table->get('_tbl');
+
+			// Get the table fields.
+			$it[$key]->tableFields = $it[$key]->table->getFields();
+
+			// Component fields
+			// @todo This need should be checked hardcoding.
+			$it[$key]->fields                   = new Registry;
+			$it[$key]->fields->id               = isset($it[$key]->tableFields['id']) ? 'id' : null;
+			$it[$key]->fields->title            = isset($it[$key]->tableFields['name']) ? 'name' : null;
+			$it[$key]->fields->title            = isset($it[$key]->tableFields['title']) ? 'title' : $it[$key]->fields->title;
+			$it[$key]->fields->alias            = isset($it[$key]->tableFields['alias']) ? 'alias' : null;
+			$it[$key]->fields->ordering         = isset($it[$key]->tableFields['ordering']) ? 'ordering' : null;
+			$it[$key]->fields->ordering         = isset($it[$key]->tableFields['lft']) ? 'lft' : $it[$key]->fields->ordering;
+			$it[$key]->fields->menutype         = isset($it[$key]->tableFields['menutype']) ? 'menutype' : null;
+			$it[$key]->fields->level            = isset($it[$key]->tableFields['level']) ? 'level' : null;
+			$it[$key]->fields->catid            = isset($it[$key]->tableFields['catid']) ? 'catid' : null;
+			$it[$key]->fields->language         = isset($it[$key]->tableFields['language']) ? 'language' : null;
+			$it[$key]->fields->access           = isset($it[$key]->tableFields['access']) ? 'access' : null;
+			$it[$key]->fields->published        = isset($it[$key]->tableFields['state']) ? 'state' : null;
+			$it[$key]->fields->published        = isset($it[$key]->tableFields['published']) ? 'published' : $it[$key]->fields->published;
+			$it[$key]->fields->created_by       = isset($it[$key]->tableFields['created_user_id']) ? 'created_user_id' : null;
+			$it[$key]->fields->created_by       = isset($it[$key]->tableFields['created_by']) ? 'created_by' : $it[$key]->fields->created_by;
+			$it[$key]->fields->checked_out      = isset($it[$key]->tableFields['checked_out']) ? 'checked_out' : null;
+			$it[$key]->fields->checked_out_time = isset($it[$key]->tableFields['checked_out_time']) ? 'checked_out_time' : null;
+
+			// Disallow ordering according to component.
+			$it[$key]->excludeOrdering = array();
+
+			if (is_null($it[$key]->fields->catid))
+			{
+				array_push($it[$key]->excludeOrdering, 'category_title');
+			}
+			if (is_null($it[$key]->fields->menutype))
+			{
+				array_push($it[$key]->excludeOrdering, 'menutype_title');
+			}
+			if (is_null($it[$key]->fields->access))
+			{
+				array_push($it[$key]->excludeOrdering, 'access_level');
+			}
+			if (is_null($it[$key]->fields->ordering))
+			{
+				array_push($it[$key]->excludeOrdering, 'ordering');
 			}
 
-			// Load the association get items helper class.
-			JLoader::register($cp[$key]->associations->gethelper->class, $cp[$key]->associations->gethelper->file);
+			// Check the default ordering (ordering is the default, is component does not support, fallback to title).
+			$it[$key]->defaultOrdering = is_null($it[$key]->fields->ordering) ? array('title', 'ASC') : array('ordering', 'ASC');
 
-			// If association get items helper class cannot loaded, component does not support associations.
-			if (!class_exists($cp[$key]->associations->gethelper->class))
+			// Check the helpers.
+			$it[$key] = self::getItemHelpers($it[$key]);
+			if (!isset($it[$key]->associations->gethelper) || !isset($it[$key]->associations->htmlhelper))
 			{
-				$cp[$key]->associations->support = false;
-
-				return $cp[$key];
+				$it[$key]->associations->support = false;
 			}
 
-			// If association get items helper class cannot be called, component does not support associations.
-			if (!class_exists($cp[$key]->associations->gethelper->class))
+			// If component item type does not support associations no need to proceed.
+			if (!$it[$key]->associations->support)
 			{
-				$cp[$key]->associations->support = false;
+				unset($it[$key]->model);
+				unset($it[$key]->table);
 
-				return $cp[$key];
+				return $it[$key];
 			}
 
-			// Association JHtml Helper.
-			$cp[$key]->associations->htmlhelper = new Registry;
+			// Get the translated titles.
+			$lang = JFactory::getLanguage();
+			$lang->load($it[$key]->realcomponent . '.sys', JPATH_ADMINISTRATOR) || $lang->load($it[$key]->realcomponent . '.sys', $it[$key]->adminPath);
+			$lang->load($it[$key]->realcomponent, JPATH_ADMINISTRATOR) || $lang->load($it[$key]->realcomponent, $it[$key]->adminPath);
 
-			foreach (glob($cp[$key]->adminPath . '/helpers/html/*.php', GLOB_NOSORT) as $htmlHelperFile)
+			// For the component of the item type.
+			$it[$key]->componentTitle = JText::_($it[$key]->realcomponent);
+
+			// If the item type is a category.
+			if ($it[$key]->item === 'category')
 			{
-				// Using JHtml Override.
-				$className = 'JHtml' . ucfirst(basename($htmlHelperFile, '.php'));
+				$languageKey = strtoupper(str_replace('.', '_', $it[$key]->extension)) . '_CATEGORIES';
+				$it[$key]->title = $lang->hasKey($languageKey) ? JText::_($languageKey) : JText::_('JCATEGORIES');
+			}
+			// For all other item types.
+			else
+			{
+				$languageKey = strtoupper($it[$key]->realcomponent) . '_' . strtoupper($it[$key]->item) . 'S';
+				$it[$key]->title = $lang->hasKey($languageKey) ? JText::_($languageKey) : JText::_($it[$key]->realcomponent);
+			}
+		}
+
+		return $it[$key];
+	}
+
+	/**
+	 * Check for existing item association helpers.
+	 *
+	 * @param   JRegistry  $itemType  Item type properties.
+	 *
+	 * @return  JRegistry  The item properties. For chaining.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 * @deprecated  4.0  Association Helpers will be removed.
+	 */
+	protected static function getItemHelpers($itemType)
+	{
+		$itemType->sitePath = JPATH_SITE . '/components/' . $itemType->realcomponent;
+
+		// Association get items Helper.
+		$getHelperFile = $itemType->sitePath . '/helpers/association.php';
+
+		if (file_exists($getHelperFile))
+		{
+			// For items.
+			if (is_null($itemType->extension))
+			{
+				$className   = ucfirst(substr($itemType->realcomponent, 4)) . 'HelperAssociation';
+				$classMethod = 'getAssociations';
+			}
+			// For categories.
+			else
+			{
+				$className   = ucfirst(substr($itemType->realcomponent, 4)) . 'HelperAssociation';
+				$classMethod = 'getCategoryAssociations';
+			}
+		}
+		// Exclusive for com_menus. @todo menus should be uniformized.
+		elseif ($itemType->component === 'com_menus')
+		{
+			$getHelperFile = $itemType->adminPath . '/helpers/menus.php';
+			$className     = 'MenusHelper';
+			$classMethod   = 'getAssociations';
+		}
+
+		// Load the association get items helper class and check if helper class exits and it's callable.
+		if (isset($className))
+		{
+			JLoader::register($className, $getHelperFile);
+
+			if (class_exists($className) && is_callable(array($className, $classMethod)))
+			{
+				$itemType->associations->gethelper         = new Registry;
+				$itemType->associations->gethelper->class  = $className;
+				$itemType->associations->gethelper->file   = $getHelperFile;
+				$itemType->associations->gethelper->method = $classMethod;
+			}
+		}
+
+		// Association JHtml Helper.
+		foreach (glob($itemType->adminPath . '/helpers/html/*.php', GLOB_NOSORT) as $htmlHelperFile)
+		{
+			// Using JHtml Override.
+			$className = 'JHtml' . ucfirst(basename($htmlHelperFile, '.php'));
+			JLoader::register($className, $htmlHelperFile);
+
+			if (class_exists($className) && is_callable(array($className, 'association')))
+			{
+				$itemType->associations->htmlhelper        = new Registry;
+				$itemType->associations->htmlhelper->key   = str_replace('JHtml', '', $className) . '.association';
+				$itemType->associations->htmlhelper->class = $className;
+				$itemType->associations->htmlhelper->file  = $htmlHelperFile;
+			}
+			// Using Legacy (ex: com_menus). @todo menus should be uniformized.
+			else
+			{
+				$className = ucfirst(substr($itemType->component, 4)) . 'Html' . ucfirst(basename($htmlHelperFile, '.php'));
 				JLoader::register($className, $htmlHelperFile);
 
 				if (class_exists($className) && is_callable(array($className, 'association')))
 				{
-					$cp[$key]->associations->htmlhelper->key   = str_replace('JHtml', '', $className) . '.association';
-					$cp[$key]->associations->htmlhelper->class = $className;
-					$cp[$key]->associations->htmlhelper->file  = $htmlHelperFile;
-				}
-				// Using Legacy (ex: com_menus). @todo menus should be uniformized.
-				else
-				{
-					$className = ucfirst(substr($cp[$key]->component, 4)) . 'Html' . ucfirst(basename($htmlHelperFile, '.php'));
-					JLoader::register($className, $htmlHelperFile);
-
-					if (class_exists($className) && is_callable(array($className, 'association')))
-					{
-						$cp[$key]->associations->htmlhelper->key   = str_replace('Html', 'Html.', $className) . '.association';
-						$cp[$key]->associations->htmlhelper->class = $className;
-						$cp[$key]->associations->htmlhelper->file  = $htmlHelperFile;
-					}
+					$itemType->associations->htmlhelper         = new Registry;
+					$itemType->associations->htmlhelper->key    = str_replace('Html', 'Html.', $className) . '.association';
+					$itemType->associations->htmlhelper->class  = $className;
+					$itemType->associations->htmlhelper->file   = $htmlHelperFile;
 				}
 			}
-
-			// Get component title.
-			$lang = JFactory::getLanguage();
-			$lang->load($cp[$key]->component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($cp[$key]->component . '.sys', $cp[$key]->adminPath);
-			$lang->load($cp[$key]->component, JPATH_ADMINISTRATOR) || $lang->load($cp[$key]->component, $cp[$key]->adminPath);
-
-			// Get the translate title for the component.
-			$cp[$key]->title = JText::_($cp[$key]->component);
-
-			// Get the translate title for the component item.
-			$languageKey = strtoupper($cp[$key]->realcomponent) . '_' . strtoupper($cp[$key]->item) . 'S';
-			$cp[$key]->itemsTitle = $lang->hasKey($languageKey) ? JText::_($languageKey) : JText::_($cp[$key]->component);
-
-			// Check if component support categories associations.
-			if ($cp[$key]->component !== 'com_categories')
-			{
-				$cp[$key]->associations->supportCategories = is_callable(array($cp[$key]->associations->gethelper->class, 'getCategoryAssociations'));
-
-				// Get the translate title for the component category item.
-				if ($cp[$key]->associations->supportCategories)
-				{
-					$languageKey = strtoupper($cp[$key]->realcomponent) . '_CATEGORIES';
-					$cp[$key]->categoriesTitle = $lang->hasKey($languageKey) ? JText::_($languageKey) : JText::_('JCATEGORIES');
-				}
-			}
-
-			// If we are fetching only the main component info don't do anything else.
-			if (is_null($cp[$key]->item))
-			{
-				return $cp[$key];
-			}
-
-			// If association html helper cannot loaded, component items does not support associations.
-			if (!isset($cp[$key]->associations->htmlhelper->class))
-			{
-				$cp[$key]->associations->support     = false;
-				$cp[$key]->associations->supportItem = false;
-
-				return $cp[$key];
-			}
-
-			// Check if component item supports associations.
-			$itemName = ucfirst($cp[$key]->item);
-
-			JLoader::register($componentName . 'Model' . $itemName, $modelsPath . '/' . $cp[$key]->item . '.php');
-			$cp[$key]->model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
-
-			// If component item model cannot loaded, or associations properties does not exist, component item does not support associations.
-			$cp[$key]->associations->supportItem = $cp[$key]->model && $cp[$key]->model->get('associationsContext');
-
-			// If item does not support associations don't do anything else and free model form memory.
-			if (!$cp[$key]->associations->supportItem)
-			{
-				unset($cp[$key]->model);
-				return $cp[$key];
-			}
-
-			// Get Item type alias, Asset column key and Associations context key.
-			$cp[$key]->typeAlias             = !is_null($cp[$key]->extension) ? 'com_categories.category' : $cp[$key]->model->get('typeAlias');
-			$cp[$key]->assetKey              = !is_null($cp[$key]->extension) ? $cp[$key]->realcomponent . '.category' : $cp[$key]->typeAlias;
-			$cp[$key]->associations->context = $cp[$key]->model->get('associationsContext');
-
-			// Get the database table.
-			$cp[$key]->model->addTablePath($cp[$key]->adminPath . '/tables');
-			$cp[$key]->table   = $cp[$key]->model->getTable();
-			$cp[$key]->dbtable = $cp[$key]->table->get('_tbl');
-
-			// Get the table fields.
-			$cp[$key]->tableFields = $cp[$key]->table->getFields();
-
-			// Component fields
-			// @todo This need should be checked hardcoding.
-			$cp[$key]->fields                   = new Registry;
-			$cp[$key]->fields->id               = isset($cp[$key]->tableFields['id']) ? 'id' : null;
-			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['name']) ? 'name' : null;
-			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['title']) ? 'title' : $cp[$key]->fields->title;
-			$cp[$key]->fields->alias            = isset($cp[$key]->tableFields['alias']) ? 'alias' : null;
-			$cp[$key]->fields->ordering         = isset($cp[$key]->tableFields['ordering']) ? 'ordering' : null;
-			$cp[$key]->fields->ordering         = isset($cp[$key]->tableFields['lft']) ? 'lft' : $cp[$key]->fields->ordering;
-			$cp[$key]->fields->menutype         = isset($cp[$key]->tableFields['menutype']) ? 'menutype' : null;
-			$cp[$key]->fields->level            = isset($cp[$key]->tableFields['level']) ? 'level' : null;
-			$cp[$key]->fields->catid            = isset($cp[$key]->tableFields['catid']) ? 'catid' : null;
-			$cp[$key]->fields->language         = isset($cp[$key]->tableFields['language']) ? 'language' : null;
-			$cp[$key]->fields->access           = isset($cp[$key]->tableFields['access']) ? 'access' : null;
-			$cp[$key]->fields->published        = isset($cp[$key]->tableFields['state']) ? 'state' : null;
-			$cp[$key]->fields->published        = isset($cp[$key]->tableFields['published']) ? 'published' : $cp[$key]->fields->published;
-			$cp[$key]->fields->created_by       = isset($cp[$key]->tableFields['created_user_id']) ? 'created_user_id' : null;
-			$cp[$key]->fields->created_by       = isset($cp[$key]->tableFields['created_by']) ? 'created_by' : $cp[$key]->fields->created_by;
-			$cp[$key]->fields->checked_out      = isset($cp[$key]->tableFields['checked_out']) ? 'checked_out' : null;
-			$cp[$key]->fields->checked_out_time = isset($cp[$key]->tableFields['checked_out_time']) ? 'checked_out_time' : null;
-
-			// Disallow ordering according to component.
-			$cp[$key]->excludeOrdering = array();
-
-			if (is_null($cp[$key]->fields->catid))
-			{
-				array_push($cp[$key]->excludeOrdering, 'category_title');
-			}
-			if (is_null($cp[$key]->fields->menutype))
-			{
-				array_push($cp[$key]->excludeOrdering, 'menutype_title');
-			}
-			if (is_null($cp[$key]->fields->access))
-			{
-				array_push($cp[$key]->excludeOrdering, 'access_level');
-			}
-			if (is_null($cp[$key]->fields->ordering))
-			{
-				array_push($cp[$key]->excludeOrdering, 'ordering');
-			}
-
-			// Check the default ordering (ordering is the default, is component does not support, fallback to title).
-			$cp[$key]->defaultOrdering = is_null($cp[$key]->fields->ordering) ? array('title', 'ASC') : array('ordering', 'ASC');
 		}
 
-		return $cp[$key];
+		// Router helper.
+		$routerHelperFile = $itemType->sitePath . '/helpers/route.php';
+
+		if (file_exists($routerHelperFile))
+		{
+			$className   = ucfirst(substr($itemType->realcomponent, 4)) . 'HelperRoute';
+			$classMethod = is_null($itemType->extension) ? 'get' . ucfirst(substr($itemType->item, 4)) . 'Route' : 'getCategoryRoute';
+
+			JLoader::register($className, $routerHelperFile);
+
+			if (class_exists($className) && is_callable(array($className, $classMethod)))
+			{
+				$itemType->associations->routerhelper         = new Registry;
+				$itemType->associations->routerhelper->file   = $routerHelperFile;
+				$itemType->associations->routerhelper->class  = $className;
+				$itemType->associations->routerhelper->method = $classMethod;
+			}
+		}
+
+		return $itemType;
 	}
 
 	/**
-	 * Get the associated language edit links Html.
+	 * Get all the content languages.
 	 *
-	 * @param   JRegistry  $component     Component properties.
-	 * @param   integer    $itemId        Item id.
-	 * @param   string     $itemLanguage  Item language code.
-	 * @param   boolean    $addLink       True for adding edit links. False for just text.
-	 * @param   boolean    $allLanguages  True for showing all content languages. False only languages with associations.
-	 *
-	 * @return  string  The language HTML
+	 * @return  array  Array of objects all content languages by language code.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function getAssociationHtmlList($component, $itemId, $itemLanguage, $addLink = true, $allLanguages = true)
+	public static function getContentLanguages()
+	{
+		$db = JFactory::getDbo();
+
+		// Get all content languages.
+		$query = $db->getQuery(true)
+			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title', 'published')))
+			->from($db->quoteName('#__languages'))
+			->order($db->quoteName('ordering') . ' ASC');
+
+		$db->setQuery($query);
+
+		return $db->loadObjectList('lang_code');
+	}
+
+	/**
+	 * Get the associated language links.
+	 *
+	 * @param   JRegistry  $itemType  Item type properties.
+	 * @param   integer    $itemId    Item id.
+	 *
+	 * @return  array  Array of objects all associated elements by language code.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationList($itemType, $itemId)
 	{
 		$db    = JFactory::getDbo();
 		$items = array();
 
 		// Get the associations.
 		$associations = JLanguageAssociations::getAssociations(
-			$component->realcomponent,
-			$component->dbtable,
-			$component->associations->context,
+			$itemType->realcomponent,
+			$itemType->dbtable,
+			$itemType->associations->context,
 			$itemId,
-			$component->fields->id,
-			$component->fields->alias,
-			$component->fields->catid
+			$itemType->fields->id,
+			$itemType->fields->alias,
+			$itemType->fields->catid
 		);
 
 		// If associations exist get their data.
@@ -329,45 +369,61 @@ class AssociationsHelper extends JHelperContent
 
 			// Get the associated items.
 			$query = $db->getQuery(true)
-				->select($db->quoteName('a.' . $component->fields->id, 'id'))
-				->select($db->quoteName('a.' . $component->fields->language, 'language'))
-				->select($db->quoteName('a.' . $component->fields->title, 'title'))
-				->from($db->quoteName($component->dbtable, 'a'))
-				->where($db->quoteName('a.' . $component->fields->id) . ' IN (' . implode(', ', array_values($associations)) . ')');
+				->select($db->quoteName('a.' . $itemType->fields->id, 'id'))
+				->select($db->quoteName('a.' . $itemType->fields->language, 'language'))
+				->select($db->quoteName('a.' . $itemType->fields->title, 'title'))
+				->from($db->quoteName($itemType->dbtable, 'a'))
+				->where($db->quoteName('a.' . $itemType->fields->id) . ' IN (' . implode(', ', array_values($associations)) . ')');
 
-			if (!is_null($component->fields->catid))
+			if (!is_null($itemType->fields->catid))
 			{
 				$query->select($db->quoteName('c.title', 'category_title'))
-					->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
+					->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $itemType->fields->catid));
 			}
 
-			if (!is_null($component->fields->menutype))
+			if (!is_null($itemType->fields->menutype))
 			{
 				$query->select($db->quoteName('mt.title', 'menu_title'))
-					->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
+					->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $itemType->fields->menutype));
 			}
 
 			$db->setQuery($query);
 
-			$items = $db->loadObjectList($component->fields->language);
+			$items = $db->loadObjectList($itemType->fields->language);
 		}
 
+		return $items;
+	}
+
+	/**
+	 * Get the associated language edit links Html.
+	 *
+	 * @param   JRegistry  $itemType      Item type properties.
+	 * @param   integer    $itemId        Item id.
+	 * @param   string     $itemLanguage  Item language code.
+	 * @param   boolean    $addLink       True for adding edit links. False for just text.
+	 * @param   boolean    $allLanguages  True for showing all content languages. False only languages with associations.
+	 *
+	 * @return  string  The language HTML
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationHtmlList($itemType, $itemId, $itemLanguage, $addLink = true, $allLanguages = true)
+	{
+		$db    = JFactory::getDbo();
+
+		// Get the associations list for this item.
+		$items = self::getAssociationList($itemType, $itemId);
+
 		// Get all content languages.
-		$query = $db->getQuery(true)
-			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title')))
-			->from($db->quoteName('#__languages'))
-			->order($db->quoteName('ordering') . ' ASC');
-
-		$db->setQuery($query);
-
-		$languages = $db->loadObjectList('lang_code');
+		$languages = self::getContentLanguages();
 
 		// Load item table for ACL checks.
-		$table = clone $component->table;
+		$table = clone $itemType->table;
 		$table->load($itemId);
 
-		$canEditReference = self::allowEdit($component, $table);
-		$canCreate        = self::allowAdd($component);
+		$canEditReference = self::allowEdit($itemType, $table);
+		$canCreate        = self::allowAdd($itemType);
 
 		// Create associated items list.
 		foreach ($languages as $langCode => $language)
@@ -403,7 +459,7 @@ class AssociationsHelper extends JHelperContent
 				$labelClass  = 'label';
 				$target      = $langCode . ':' . $items[$langCode]->id . ':edit';
 				$table->load($items[$langCode]->id);
-				$allow       = $canEditReference && self::allowEdit($component, $table);
+				$allow       = $canEditReference && self::allowEdit($itemType, $table);
 			}
 			else
 			{
@@ -417,13 +473,13 @@ class AssociationsHelper extends JHelperContent
 
 			// Generate item Html.
 			$options   = array(
-				'option'    => 'com_associations',
-				'view'      => 'association',
-				'layout'    => 'edit',
-				'component' => $component->key,
-				'task'      => 'association.edit',
-				'id'        => $itemId,
-				'target'    => $target,
+				'option'   => 'com_associations',
+				'view'     => 'association',
+				'layout'   => 'edit',
+				'itemtype' => $itemType->key,
+				'task'     => 'association.edit',
+				'id'       => $itemId,
+				'target'   => $target,
 			);
 			$url       = JRoute::_('index.php?' . http_build_query($options));
 			$text      = strtoupper($language->sef);
@@ -439,46 +495,46 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Get a existing asset key using the item parents.
 	 *
-	 * @param   JRegistry  $component  Component properties.
-	 * @param   object     $item       Item db row.
+	 * @param   JRegistry  $itemType  Item type properties.
+	 * @param   object     $item      Item db row.
 	 *
 	 * @return  string  The asset key.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	protected static function getAssetKey(JRegistry $component, $item = null)
+	protected static function getAssetKey(JRegistry $itemType, $item = null)
 	{
 		// Get the item asset.
 		$asset = JTable::getInstance('Asset');
-		$asset->loadByName($component->assetKey . '.' . $item->id);
+		$asset->loadByName($itemType->assetKey . '.' . $item->id);
 
 		// If the item asset does not exist (ex: com_menus, com_contact, com_newsfeeds).
 		if (is_null($asset->id))
 		{
 			// For menus component, if item asset does not exist, fallback to menu asset.
-			if (!is_null($component->fields->menutype))
+			if (!is_null($itemType->fields->menutype))
 			{
 				// If the menu type id is unknown get it from MenuType table.
 				if (!isset($item->menutypeid))
 				{
 					$table = JTable::getInstance('MenuType');
-					$table->load(array('menutype' => $item->{$component->fields->menutype}));
+					$table->load(array('menutype' => $item->{$itemType->fields->menutype}));
 					$item->menutypeid = $table->id;
 				}
 
-				$asset->loadByName($component->realcomponent . '.menu.' . $item->menutypeid);
+				$asset->loadByName($itemType->realcomponent . '.menu.' . $item->menutypeid);
 			}
 			// For all other components, if item asset does not exist, fallback to category asset (if component supports).
-			elseif (!is_null($component->fields->catid))
+			elseif (!is_null($itemType->fields->catid))
 			{
-				$asset->loadByName($component->realcomponent . '.category.' . $item->{$component->fields->catid});
+				$asset->loadByName($itemType->realcomponent . '.category.' . $item->{$itemType->fields->catid});
 			}
 		}
 
 		// If item asset, category/menu asset does not exist, fallback to component asset.
 		if (is_null($asset->id))
 		{
-			$asset->loadByName($component->realcomponent);
+			$asset->loadByName($itemType->realcomponent);
 		}
 
 		return $asset->name;
@@ -487,32 +543,32 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to edit items.
 	 *
-	 * @param   JRegistry  $component  Component properties.
-	 * @param   object     $item       Item db row.
+	 * @param   JRegistry  $itemType  Item type properties.
+	 * @param   object     $item      Item db row.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowEdit(JRegistry $component, $item = null)
+	public static function allowEdit(JRegistry $itemType, $item = null)
 	{
 		$user = JFactory::getUser();
 
 		// If no item properties return the component permissions for core.edit.
 		if (is_null($item))
 		{
-			return $user->authorise('core.edit', $component->realcomponent);
+			return $user->authorise('core.edit', $itemType->realcomponent);
 		}
 
 		// Get the asset key.
-		$assetKey = self::getAssetKey($component, $item);
+		$assetKey = self::getAssetKey($itemType, $item);
 
 		// Check if can edit own.
 		$canEditOwn = false;
 
-		if (!is_null($component->fields->created_by))
+		if (!is_null($itemType->fields->created_by))
 		{
-			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$component->fields->created_by} == $user->id;
+			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$itemType->fields->created_by} == $user->id;
 		}
 
 		// Check also core.edit permissions.
@@ -522,47 +578,47 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to create items.
 	 *
-	 * @param   JRegistry  $component  Component properties.
-	 * @param   object     $item       Item db row.
+	 * @param   JRegistry  $itemType  Item type properties.
+	 * @param   object     $item      Item db row.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowAdd(JRegistry $component, $item = null)
+	public static function allowAdd(JRegistry $itemType, $item = null)
 	{
 		$user = JFactory::getUser();
 
 		// If no item properties return the component permissions for core.edit.
 		if (is_null($item))
 		{
-			return $user->authorise('core.create', $component->realcomponent);
+			return $user->authorise('core.create', $itemType->realcomponent);
 		}
 
 
 		// Check core.create permissions.
-		return $user->authorise('core.create', self::getAssetKey($component, $item));
+		return $user->authorise('core.create', self::getAssetKey($itemType, $item));
 	}
 
 	/**
 	 * Check if user is allowed to perform check actions (checkin/checkout) on a item.
 	 *
-	 * @param   JRegistry  $component  Component properties.
-	 * @param   object     $item       Item db row.
+	 * @param   JRegistry  $itemType  Item type properties.
+	 * @param   object     $item      Item db row.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function allowCheckActions(JRegistry $component, $item = null)
+	public static function allowCheckActions(JRegistry $itemType, $item = null)
 	{
 		// If no item properties or component doesn't have checked_out field, doesn't support checkin/checkout.
-		if (is_null($item) || is_null($component->fields->checked_out))
+		if (is_null($item) || is_null($itemType->fields->checked_out))
 		{
 			return false;
 		}
 
 		// All other cases. Check if user checked out this item.
-		return in_array($item->{$component->fields->checked_out}, array(JFactory::getUser()->id, 0));
+		return in_array($item->{$itemType->fields->checked_out}, array(JFactory::getUser()->id, 0));
 	}
 }
