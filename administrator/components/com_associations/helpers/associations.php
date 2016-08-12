@@ -143,36 +143,6 @@ class AssociationsHelper extends JHelperContent
 				return $cp[$key];
 			}
 
-			// Association JHtml Helper.
-			$cp[$key]->associations->htmlhelper = new Registry;
-
-			foreach (glob($cp[$key]->adminPath . '/helpers/html/*.php', GLOB_NOSORT) as $htmlHelperFile)
-			{
-				// Using JHtml Override.
-				$className = 'JHtml' . ucfirst(basename($htmlHelperFile, '.php'));
-				JLoader::register($className, $htmlHelperFile);
-
-				if (class_exists($className) && is_callable(array($className, 'association')))
-				{
-					$cp[$key]->associations->htmlhelper->key   = str_replace('JHtml', '', $className) . '.association';
-					$cp[$key]->associations->htmlhelper->class = $className;
-					$cp[$key]->associations->htmlhelper->file  = $htmlHelperFile;
-				}
-				// Using Legacy (ex: com_menus). @todo menus should be uniformized.
-				else
-				{
-					$className = ucfirst(substr($cp[$key]->component, 4)) . 'Html' . ucfirst(basename($htmlHelperFile, '.php'));
-					JLoader::register($className, $htmlHelperFile);
-
-					if (class_exists($className) && is_callable(array($className, 'association')))
-					{
-						$cp[$key]->associations->htmlhelper->key   = str_replace('Html', 'Html.', $className) . '.association';
-						$cp[$key]->associations->htmlhelper->class = $className;
-						$cp[$key]->associations->htmlhelper->file  = $htmlHelperFile;
-					}
-				}
-			}
-
 			// Get component title.
 			$lang = JFactory::getLanguage();
 			$lang->load($cp[$key]->component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($cp[$key]->component . '.sys', $cp[$key]->adminPath);
@@ -201,15 +171,6 @@ class AssociationsHelper extends JHelperContent
 			// If we are fetching only the main component info don't do anything else.
 			if (is_null($cp[$key]->item))
 			{
-				return $cp[$key];
-			}
-
-			// If association html helper cannot loaded, component items does not support associations.
-			if (!isset($cp[$key]->associations->htmlhelper->class))
-			{
-				$cp[$key]->associations->support     = false;
-				$cp[$key]->associations->supportItem = false;
-
 				return $cp[$key];
 			}
 
@@ -291,19 +252,38 @@ class AssociationsHelper extends JHelperContent
 	}
 
 	/**
-	 * Get the associated language edit links Html.
+	 * Get all the content languages.
 	 *
-	 * @param   JRegistry  $component     Component properties.
-	 * @param   integer    $itemId        Item id.
-	 * @param   string     $itemLanguage  Item language code.
-	 * @param   boolean    $addLink       True for adding edit links. False for just text.
-	 * @param   boolean    $allLanguages  True for showing all content languages. False only languages with associations.
-	 *
-	 * @return  string  The language HTML
+	 * @return  array  Array of objects all content languages by language code.
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	public static function getAssociationHtmlList($component, $itemId, $itemLanguage, $addLink = true, $allLanguages = true)
+	public static function getContentLanguages()
+	{
+		$db = JFactory::getDbo();
+
+		// Get all content languages.
+		$query = $db->getQuery(true)
+			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title', 'published')))
+			->from($db->quoteName('#__languages'))
+			->order($db->quoteName('ordering') . ' ASC');
+
+		$db->setQuery($query);
+
+		return $db->loadObjectList('lang_code');
+	}
+
+	/**
+	 * Get the associated language links.
+	 *
+	 * @param   JRegistry  $component     Component properties.
+	 * @param   integer    $itemId        Item id.
+	 *
+	 * @return  array  Array of objects all associated elements by language code.
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationList($component, $itemId)
 	{
 		$db    = JFactory::getDbo();
 		$items = array();
@@ -352,15 +332,31 @@ class AssociationsHelper extends JHelperContent
 			$items = $db->loadObjectList($component->fields->language);
 		}
 
+		return $items;
+	}
+
+	/**
+	 * Get the associated language edit links Html.
+	 *
+	 * @param   JRegistry  $component     Component properties.
+	 * @param   integer    $itemId        Item id.
+	 * @param   string     $itemLanguage  Item language code.
+	 * @param   boolean    $addLink       True for adding edit links. False for just text.
+	 * @param   boolean    $allLanguages  True for showing all content languages. False only languages with associations.
+	 *
+	 * @return  string  The language HTML
+	 *
+	 * @since  __DEPLOY_VERSION__
+	 */
+	public static function getAssociationHtmlList($component, $itemId, $itemLanguage, $addLink = true, $allLanguages = true)
+	{
+		$db    = JFactory::getDbo();
+
+		// Get the associations list for this item.
+		$items = self::getAssociationList($component, $itemId);
+
 		// Get all content languages.
-		$query = $db->getQuery(true)
-			->select($db->quoteName(array('sef', 'lang_code', 'image', 'title')))
-			->from($db->quoteName('#__languages'))
-			->order($db->quoteName('ordering') . ' ASC');
-
-		$db->setQuery($query);
-
-		$languages = $db->loadObjectList('lang_code');
+		$languages = self::getContentLanguages();
 
 		// Load item table for ACL checks.
 		$table = clone $component->table;
