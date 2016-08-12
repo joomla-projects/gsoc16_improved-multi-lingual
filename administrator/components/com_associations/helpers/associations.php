@@ -143,6 +143,36 @@ class AssociationsHelper extends JHelperContent
 				return $cp[$key];
 			}
 
+			// Association JHtml Helper.
+			$cp[$key]->associations->htmlhelper = new Registry;
+
+			foreach (glob($cp[$key]->adminPath . '/helpers/html/*.php', GLOB_NOSORT) as $htmlHelperFile)
+			{
+				// Using JHtml Override.
+				$className = 'JHtml' . ucfirst(basename($htmlHelperFile, '.php'));
+				JLoader::register($className, $htmlHelperFile);
+
+				if (class_exists($className) && is_callable(array($className, 'association')))
+				{
+					$cp[$key]->associations->htmlhelper->key   = str_replace('JHtml', '', $className) . '.association';
+					$cp[$key]->associations->htmlhelper->class = $className;
+					$cp[$key]->associations->htmlhelper->file  = $htmlHelperFile;
+				}
+				// Using Legacy (ex: com_menus). @todo menus should be uniformized.
+				else
+				{
+					$className = ucfirst(substr($cp[$key]->component, 4)) . 'Html' . ucfirst(basename($htmlHelperFile, '.php'));
+					JLoader::register($className, $htmlHelperFile);
+
+					if (class_exists($className) && is_callable(array($className, 'association')))
+					{
+						$cp[$key]->associations->htmlhelper->key   = str_replace('Html', 'Html.', $className) . '.association';
+						$cp[$key]->associations->htmlhelper->class = $className;
+						$cp[$key]->associations->htmlhelper->file  = $htmlHelperFile;
+					}
+				}
+			}
+
 			// Get component title.
 			$lang = JFactory::getLanguage();
 			$lang->load($cp[$key]->component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($cp[$key]->component . '.sys', $cp[$key]->adminPath);
@@ -171,6 +201,15 @@ class AssociationsHelper extends JHelperContent
 			// If we are fetching only the main component info don't do anything else.
 			if (is_null($cp[$key]->item))
 			{
+				return $cp[$key];
+			}
+
+			// If association html helper cannot loaded, component items does not support associations.
+			if (!isset($cp[$key]->associations->htmlhelper->class))
+			{
+				$cp[$key]->associations->support     = false;
+				$cp[$key]->associations->supportItem = false;
+
 				return $cp[$key];
 			}
 
