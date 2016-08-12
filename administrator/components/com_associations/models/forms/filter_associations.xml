@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>
 	<field
-		name="component"
-		type="associatedcomponent"
+		name="itemtype"
+		type="itemtype"
 		label="COM_ASSOCIATIONS_COMPONENT_SELECTOR_LABEL"
 		description="COM_ASSOCIATIONS_COMPONENT_SELECTOR_DESC"
 		onchange="jQuery('select[id^=\'filter_\']').val('');jQuery('select[id^=\'list_\']').val('');this.form.submit();"
