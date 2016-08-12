@@ -92,8 +92,7 @@ else
 $input   = $this->app->input;
 $options = array(
 			'layout'            => $input->get('layout', '', 'string'),
-			'component'         => $this->component->key,
-			'referencelanguage' => $input->get('referencelanguage', '', 'string'),
+			'itemtype'          => $this->itemType->key,
 			'id'                => $this->referenceId,
 		);
 ?>
@@ -102,7 +101,7 @@ $options = array(
 		data-hide-reference="<?php echo JText::_('COM_ASSOCIATIONS_EDIT_HIDE_REFERENCE'); ?>"><?php echo JText::_('COM_ASSOCIATIONS_EDIT_HIDE_REFERENCE'); ?>
 </button>
 
-<form action="<?php echo JRoute::_('index.php?option=com_associations&view=association&' . http_build_query($options)); ?>" method="post" name="adminForm" id="adminForm" data-associatedview="<?php echo $this->component->item; ?>">
+<form action="<?php echo JRoute::_('index.php?option=com_associations&view=association&' . http_build_query($options)); ?>" method="post" name="adminForm" id="adminForm" data-associatedview="<?php echo $this->itemType->item; ?>">
 
 	<div class="sidebyside">
 
@@ -110,10 +109,10 @@ $options = array(
 			<div class="inner-panel">
 				<h3><?php echo JText::_('COM_ASSOCIATIONS_REFERENCE_ITEM'); ?></h3>
 				<iframe id="reference-association" name="reference-association"
-					src="<?php echo JRoute::_($this->editUri . '&task=' . $this->component->item . '.edit&id=' . (int) $this->referenceId); ?>"
+					src="<?php echo JRoute::_($this->editUri . '&task=' . $this->itemType->item . '.edit&id=' . (int) $this->referenceId); ?>"
 					height="100%" width="400px" scrolling="no"
 					data-action="edit"
-					data-item="<?php echo $this->component->item; ?>"
+					data-item="<?php echo $this->itemType->item; ?>"
 					data-id="<?php echo $this->referenceId; ?>"
 					data-language="<?php echo $this->referenceLanguage; ?>">
 				</iframe>
@@ -130,7 +129,7 @@ $options = array(
 					src="<?php echo $this->defaultTargetSrc; ?>"
 					height="100%" width="400px" scrolling="no"
 					data-action="<?php echo $this->targetAction; ?>"
-					data-item="<?php echo $this->component->item; ?>"
+					data-item="<?php echo $this->itemType->item; ?>"
 					data-id="<?php echo $this->targetId; ?>"
 					data-language="<?php echo $this->targetLanguage; ?>"
 					data-editurl="<?php echo JRoute::_($this->editUri); ?>">
