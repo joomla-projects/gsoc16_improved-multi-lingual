@@ -27,7 +27,6 @@ class JTableContent extends JTable
 	 */
 	protected $_columnAlias = array(
 		'published'  => 'state',
-		'created_by' => 'created_user_id',
 	);
 
 	/**
