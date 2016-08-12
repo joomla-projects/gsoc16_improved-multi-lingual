@@ -17,22 +17,22 @@ if (!JFactory::getUser()->authorise('core.manage', 'com_associations'))
 
 JLoader::register('AssociationsHelper', __DIR__ . '/helpers/associations.php');
 
-// Check if user has permission to access the component
-if ($componentKey = JFactory::getApplication()->input->get('component', '', 'string'))
+// Check if user has permission to access the component item type.
+if ($itemKey = JFactory::getApplication()->input->get('itemtype', '', 'string'))
 {
-	$cp = AssociationsHelper::getComponentProperties($componentKey);
+	$itemType = AssociationsHelper::getItemTypeProperties($itemKey);
 
-	if (!$cp->enabled)
+	if (!$itemType->componentEnabled)
 	{
-		throw new Exception(JText::_('JLIB_APPLICATION_ERROR_COMPONENT_NOT_FOUND') . ' ' . $cp->realcomponent, 404);
+		throw new Exception(JText::_('JLIB_APPLICATION_ERROR_COMPONENT_NOT_FOUND') . ' ' . $itemType->realcomponent, 404);
 	}
 
-	if (!$cp->associations->support)
+	if (!$itemType->associations->support)
 	{
-		throw new Exception(JText::_('COM_ASSOCIATIONS_COMPONENT_NOT_SUPPORTED') . ' ' . $cp->realcomponent, 404);
+		throw new Exception(JText::_('COM_ASSOCIATIONS_COMPONENT_NOT_SUPPORTED') . ' ' . $itemType->realcomponent, 404);
 	}
 
-	if (!JFactory::getUser()->authorise('core.manage', $cp->realcomponent))
+	if (!JFactory::getUser()->authorise('core.manage', $itemType->realcomponent))
 	{
 		throw new Exception(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 	}
