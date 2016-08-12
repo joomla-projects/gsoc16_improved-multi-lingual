@@ -98,12 +98,10 @@ class JFormFieldItemType extends JFormFieldGroupedList
 					$itemCategoryType = AssociationsHelper::getItemTypeProperties($itemType->categoryContext . '.category');
 
 					// Check if component item type support categories. Add category option to select box if so.
-					if (
-						isset($itemType->fields)
+					if (isset($itemType->fields)
 						&& !is_null($itemType->fields->catid)
 						&& $itemCategoryType->associations->support
-						&& !in_array($itemCategoryType->assetKey, $itemTypeList)
-					)
+						&& !in_array($itemCategoryType->assetKey, $itemTypeList))
 					{
 						$options[$itemCategoryType->componentTitle][] = JHtml::_(
 							'select.option',
