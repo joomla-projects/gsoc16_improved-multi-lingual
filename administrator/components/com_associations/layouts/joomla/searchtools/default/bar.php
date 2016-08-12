@@ -19,7 +19,6 @@ if ($data['view'] instanceof AssociationsViewAssociations)
 	if ($app->input->get('forcedItemType', '', 'string') == '')
 	{
 		$itemTypeField = $data['view']->filterForm->getField('itemtype');
-	
 ?>
 	<div class="js-stools-field-filter js-stools-selector">
 		<?php echo $itemTypeField->input; ?>
