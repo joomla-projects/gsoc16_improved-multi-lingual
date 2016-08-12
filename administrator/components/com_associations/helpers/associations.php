@@ -315,8 +315,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Get the associated language links.
 	 *
-	 * @param   JRegistry  $component     Component properties.
-	 * @param   integer    $itemId        Item id.
+	 * @param   JRegistry  $component  Component properties.
+	 * @param   integer    $itemId     Item id.
 	 *
 	 * @return  array  Array of objects all associated elements by language code.
 	 *
