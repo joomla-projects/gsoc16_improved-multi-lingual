@@ -354,7 +354,6 @@ class AssociationsModelAssociations extends JModelList
 	 *
 	 * @return  bool True on success
 	 *
-	 * @throws	Exception
 	 * @since   __DEPLOY_VERSION__
 	 */
 	public function purge()
@@ -362,7 +361,7 @@ class AssociationsModelAssociations extends JModelList
 		$db = $this->getDbo();
 
 		// Get the localise data
-		$db->setQuery('TRUNCATE TABLE #__associations');
+		$db->setQuery('TRUNCATE TABLE ' . $db->quoteName('#__associations'));
 
 		try
 		{
@@ -370,7 +369,7 @@ class AssociationsModelAssociations extends JModelList
 		}
 		catch (JDatabaseExceptionExecuting $e)
 		{
-			$this->_message = JText::_('COM_ASSOCIATIONS_PURGE_FAILED');
+			JFactory::getApplication()->enqueueMessage('COM_ASSOCIATIONS_PURGE_FAILED', error);
 
 			return false;
 		}
