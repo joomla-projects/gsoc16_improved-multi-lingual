@@ -61,8 +61,8 @@ class AssociationsModelAssociations extends JModelList
 	protected function populateState($ordering = 'ordering', $direction = 'asc')
 	{
 		$app = JFactory::getApplication();
-
-		$forcedLanguage  = $app->input->get('forcedLanguage', '', 'cmd');
+		
+		$forcedLanguage  = $app->input->get('forcedLanguage', '', 'cmd');	
 		$forcedComponent = $app->input->get('forcedComponent', '', 'string');
 
 		// Adjust the context to support modal layouts.
@@ -223,7 +223,7 @@ class AssociationsModelAssociations extends JModelList
 		if (!is_null($component->fields->catid))
 		{
 			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'));
-
+			
 			// Join over the categories.
 			$query->select($db->quoteName('c.title', 'category_title'))
 				->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
@@ -235,7 +235,7 @@ class AssociationsModelAssociations extends JModelList
 		if (!is_null($component->fields->menutype))
 		{
 			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'));
-
+			
 			// Join over the menu types.
 			$query->select($db->quoteName('mt.title', 'menutype_title'))
 				->select($db->quoteName('mt.id', 'menutypeid'))
@@ -249,7 +249,7 @@ class AssociationsModelAssociations extends JModelList
 		if (!is_null($component->fields->access))
 		{
 			$query->select($db->quoteName('a.' . $component->fields->access, 'access'));
-
+			
 			// Join over the access levels.
 			$query->select($db->quoteName('ag.title', 'access_level'))
 				->join('LEFT', $db->quoteName('#__viewlevels', 'ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $component->fields->access));
