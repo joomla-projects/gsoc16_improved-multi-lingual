@@ -229,7 +229,7 @@ class AssociationsHelper extends JHelperContent
 				return $cp[$key];
 			}
 
-			// Get Item type alias, asset column key and Associations context key.
+			// Get Item type alias, Asset column key and Associations context key.
 			$cp[$key]->typeAlias             = !is_null($cp[$key]->extension) ? 'com_categories.category' : $cp[$key]->model->get('typeAlias');
 			$cp[$key]->assetKey              = !is_null($cp[$key]->extension) ? $cp[$key]->realcomponent . '.category' : $cp[$key]->typeAlias;
 			$cp[$key]->associations->context = $cp[$key]->model->get('associationsContext');
