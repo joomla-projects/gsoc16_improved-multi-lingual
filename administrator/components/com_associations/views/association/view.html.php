@@ -46,6 +46,15 @@ class AssociationsViewAssociation extends JViewLegacy
 	protected $state;
 
 	/**
+	 * Selected item type properties.
+	 *
+	 * @var  Registry
+	 *
+	 * @since __DEPLOY_VERSION__
+	 */
+	public $itemType = null;
+
+	/**
 	 * Display the view
 	 *
 	 * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
@@ -70,18 +79,18 @@ class AssociationsViewAssociation extends JViewLegacy
 		$input       = $this->app->input;
 
 		$this->referenceId = $input->get('id', 0, 'int');
-		$this->component   = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
+		$this->itemType    = AssociationsHelper::getItemTypeProperties($input->get('itemtype', '', 'string'));
 
 		// Get reference language.
-		$table = clone $this->component->table;
+		$table = clone $this->itemType->table;
 		$table->load($this->referenceId);
 
-		$this->referenceLanguage = $table->{$this->component->fields->language};
+		$this->referenceLanguage = $table->{$this->itemType->fields->language};
 
 		$options = array(
-			'option'    => $this->component->component,
-			'view'      => $this->component->item,
-			'extension' => $this->component->extension,
+			'option'    => $this->itemType->component,
+			'view'      => $this->itemType->item,
+			'extension' => $this->itemType->extension,
 			'tmpl'      => 'component',
 		);
 
@@ -92,6 +101,7 @@ class AssociationsViewAssociation extends JViewLegacy
 		$this->targetId         = '0';
 		$this->targetLanguage   = '';
 		$this->defaultTargetSrc = '';
+		$this->targetAction     = '';
 
 		if ($target = $input->get('target', '', 'string'))
 		{
@@ -99,7 +109,7 @@ class AssociationsViewAssociation extends JViewLegacy
 			$this->targetAction     = $matches[2];
 			$this->targetId         = $matches[1];
 			$this->targetLanguage   = $matches[0];
-			$task                   = $this->component->item . '.' . $this->targetAction;
+			$task                   = $this->itemType->item . '.' . $this->targetAction;
 			$this->defaultTargetSrc = JRoute::_($this->editUri . '&task= ' . $task . ' &id=' . (int) $this->targetId);
 			$this->form->setValue('itemlanguage', '', $this->targetLanguage . ':' . $this->targetId . ':' . $this->targetAction);
 		}
@@ -159,7 +169,7 @@ class AssociationsViewAssociation extends JViewLegacy
 
 		$bar->appendButton(
 			'Custom', '<button onclick="Joomla.submitbutton(\'target\')"'
-			. 'class="btn btn-small btn-success"><span class="icon-apply icon-white"></span>' 
+			. 'class="btn btn-small btn-success"><span class="icon-apply icon-white"></span>'
 			. JText::_('COM_ASSOCIATIONS_SAVE_TARGET') . '</button>', 'target'
 		);
 

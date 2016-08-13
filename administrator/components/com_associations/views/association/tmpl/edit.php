@@ -15,46 +15,84 @@ JHtml::_('formbehavior.chosen', 'select');
 
 JHtml::_('script', 'com_associations/sidebyside.js', false, true);
 
-$this->app->getDocument()->addStyleDeclaration('
+if (JFactory::getLanguage()->isRtl()) {
+	$this->app->getDocument()->addStyleDeclaration('
 
-	.sidebyside .outer-panel {
-		float: left;
-		width: 50%;
-	}
-	.sidebyside #left-panel .inner-panel {
-		border-right: 1px solid #999999 !important;
-	}
-	.sidebyside #left-panel .inner-panel {
-		padding-right: 10px;
-	}
-	.sidebyside #right-panel .inner-panel {
-		padding-left: 10px;
-	}
-	.sidebyside .full-width {
-		float: none !important;
-		width: 100% !important;
-	}
-	.sidebyside .full-width .inner-panel {
-		padding-left: 0 !important;
-	}
-	
-	#reference-association, #target-association {
-		width: 100%;
-		height: 1500px;
-		border: 0 !important;
-	}
+		.sidebyside .outer-panel {
+			float: right;
+			width: 50%;
+		}
+		.sidebyside #right-panel .inner-panel {
+			border-right: 1px solid #999999 !important;
+		}
+		.sidebyside #left-panel .inner-panel {
+			padding-left: 10px;
+		}
+		.sidebyside #right-panel .inner-panel {
+			padding-right: 10px;
+		}
+		.sidebyside .full-width {
+			float: none !important;
+			width: 100% !important;
+		}
+		.sidebyside .full-width .inner-panel {
+			padding-left: 0 !important;
+		}
+		
+		#reference-association, #target-association {
+			width: 100%;
+			height: 1500px;
+			border: 0 !important;
+		}
 
-	.target-text {
-		float: left;
-		width: 30%;
-	}
-');
+		.target-text {
+			float: right;
+			width: 30%;
+		}
+	');
+}
+else
+{
+	$this->app->getDocument()->addStyleDeclaration('
+
+		.sidebyside .outer-panel {
+			float: left;
+			width: 50%;
+		}
+		.sidebyside #left-panel .inner-panel {
+			border-right: 1px solid #999999 !important;
+		}
+		.sidebyside #left-panel .inner-panel {
+			padding-right: 10px;
+		}
+		.sidebyside #right-panel .inner-panel {
+			padding-left: 10px;
+		}
+		.sidebyside .full-width {
+			float: none !important;
+			width: 100% !important;
+		}
+		.sidebyside .full-width .inner-panel {
+			padding-left: 0 !important;
+		}
+		
+		#reference-association, #target-association {
+			width: 100%;
+			height: 1500px;
+			border: 0 !important;
+		}
+
+		.target-text {
+			float: left;
+			width: 30%;
+		}
+	');
+}
 
 $input   = $this->app->input;
 $options = array(
 			'layout'            => $input->get('layout', '', 'string'),
-			'component'         => $this->component->key,
-			'referencelanguage' => $input->get('referencelanguage', '', 'string'),
+			'itemtype'          => $this->itemType->key,
 			'id'                => $this->referenceId,
 		);
 ?>
@@ -63,7 +101,7 @@ $options = array(
 		data-hide-reference="<?php echo JText::_('COM_ASSOCIATIONS_EDIT_HIDE_REFERENCE'); ?>"><?php echo JText::_('COM_ASSOCIATIONS_EDIT_HIDE_REFERENCE'); ?>
 </button>
 
-<form action="<?php echo JRoute::_('index.php?option=com_associations&view=association&' . http_build_query($options)); ?>" method="post" name="adminForm" id="adminForm" data-associatedview="<?php echo $this->component->item; ?>">
+<form action="<?php echo JRoute::_('index.php?option=com_associations&view=association&' . http_build_query($options)); ?>" method="post" name="adminForm" id="adminForm" data-associatedview="<?php echo $this->itemType->item; ?>">
 
 	<div class="sidebyside">
 
@@ -71,10 +109,10 @@ $options = array(
 			<div class="inner-panel">
 				<h3><?php echo JText::_('COM_ASSOCIATIONS_REFERENCE_ITEM'); ?></h3>
 				<iframe id="reference-association" name="reference-association"
-					src="<?php echo JRoute::_($this->editUri . '&task=' . $this->component->item . '.edit&id=' . (int) $this->referenceId); ?>"
+					src="<?php echo JRoute::_($this->editUri . '&task=' . $this->itemType->item . '.edit&id=' . (int) $this->referenceId); ?>"
 					height="100%" width="400px" scrolling="no"
 					data-action="edit"
-					data-item="<?php echo $this->component->item; ?>"
+					data-item="<?php echo $this->itemType->item; ?>"
 					data-id="<?php echo $this->referenceId; ?>"
 					data-language="<?php echo $this->referenceLanguage; ?>">
 				</iframe>
@@ -91,7 +129,7 @@ $options = array(
 					src="<?php echo $this->defaultTargetSrc; ?>"
 					height="100%" width="400px" scrolling="no"
 					data-action="<?php echo $this->targetAction; ?>"
-					data-item="<?php echo $this->component->item; ?>"
+					data-item="<?php echo $this->itemType->item; ?>"
 					data-id="<?php echo $this->targetId; ?>"
 					data-language="<?php echo $this->targetLanguage; ?>"
 					data-editurl="<?php echo JRoute::_($this->editUri); ?>">

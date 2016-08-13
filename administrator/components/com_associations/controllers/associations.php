@@ -9,6 +9,8 @@
 
 defined("_JEXEC") or die("Restricted access");
 
+JLoader::register('AssociationsHelper', JPATH_ADMINISTRATOR . '/components/com_associations/helpers/associations.php');
+
 /**
  * Associations controller class.
  *
@@ -53,31 +55,30 @@ class AssociationsControllerAssociations extends JControllerAdmin
 		// Check for request forgeries.
 		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
-		$key    = JFactory::getApplication()->getUserState('com_associations.associations.component');
-		$cp     = AssociationsHelper::getComponentProperties($key);
-		$return = false;
+		$itemType = AssociationsHelper::getItemTypeProperties($this->input->get('itemtype', '', 'string'));
+		$return   = false;
 
-		// Only check in, if component allows to check out.
-		if (!is_null($cp->fields->checked_out))
+		// Only check in, if component item type allows to check out.
+		if (!is_null($itemType->fields->checked_out))
 		{
 			$ids    = JFactory::getApplication()->input->post->get('cid', array(), 'array');
-			$return = $cp->model->checkin($ids);
+			$return = $itemType->model->checkin($ids);
 
-			// Load component language files.
+			// Load the item type component language files.
 			$lang = JFactory::getLanguage();
-			$lang->load($cp->component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($cp->component . '.sys', $cp->adminPath);
-			$lang->load($cp->component, JPATH_ADMINISTRATOR) || $lang->load($cp->component, $cp->adminPath);
+			$lang->load($itemType->component . '.sys', JPATH_ADMINISTRATOR) || $lang->load($itemType->component . '.sys', $itemType->adminPath);
+			$lang->load($itemType->component, JPATH_ADMINISTRATOR) || $lang->load($itemType->component, $itemType->adminPath);
 
 			// Checkin failed.
 			if ($return === false)
 			{
-				$message     = JText::sprintf('JLIB_APPLICATION_ERROR_CHECKIN_FAILED', $cp->model->getError());
+				$message     = JText::sprintf('JLIB_APPLICATION_ERROR_CHECKIN_FAILED', $itemType->model->getError());
 				$messageType = 'error';
 			}
 			// Checkin succeeded.
 			else
 			{
-				$message     = JText::plural(strtoupper($cp->component) . '_N_ITEMS_CHECKED_IN', count($ids));
+				$message     = JText::plural(strtoupper($itemType->component) . '_N_ITEMS_CHECKED_IN', count($ids));
 				$messageType = 'message';
 			}
 
@@ -85,5 +86,33 @@ class AssociationsControllerAssociations extends JControllerAdmin
 		}
 
 		return (boolean) $return;
+	}
+
+	/**
+	 * Method to purge the associations table.
+	 *
+	 * @return  void
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function purge()
+	{
+		$model = $this->getModel('associations');
+		$model->purge();
+		$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
+	}
+
+	/**
+	 * Method to delete the orphans from the associations table.
+	 *
+	 * @return  void
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function clean()
+	{
+		$model = $this->getModel('associations');
+		$model->clean();
+		$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
 	}
 }

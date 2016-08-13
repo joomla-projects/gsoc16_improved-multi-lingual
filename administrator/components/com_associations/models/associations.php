@@ -32,7 +32,7 @@ class AssociationsModelAssociations extends JModelList
 				'id', 'a.id',
 				'title',
 				'ordering',
-				'component',
+				'itemtype',
 				'language',
 				'association',
 				'menutype', 'menutype_title',
@@ -61,9 +61,9 @@ class AssociationsModelAssociations extends JModelList
 	protected function populateState($ordering = 'ordering', $direction = 'asc')
 	{
 		$app = JFactory::getApplication();
-		
-		$forcedLanguage  = $app->input->get('forcedLanguage', '', 'cmd');
-		$forcedComponent = $app->input->get('forcedComponent', '', 'string');	
+
+		$forcedLanguage = $app->input->get('forcedLanguage', '', 'cmd');
+		$forcedItemType = $app->input->get('forcedItemType', '', 'string');
 
 		// Adjust the context to support modal layouts.
 		if ($layout = $app->input->get('layout'))
@@ -77,13 +77,13 @@ class AssociationsModelAssociations extends JModelList
 			$this->context .= '.' . $forcedLanguage;
 		}
 
-		// Adjust the context to support forced components.
-		if ($forcedComponent)
+		// Adjust the context to support forced component item types.
+		if ($forcedItemType)
 		{
-			$this->context .= '.' . $forcedComponent;
+			$this->context .= '.' . $forcedItemType;
 		}
 
-		$this->setState('component', $this->getUserStateFromRequest($this->context . '.component', 'component', '', 'string'));
+		$this->setState('itemtype', $this->getUserStateFromRequest($this->context . '.itemtype', 'itemtype', '', 'string'));
 		$this->setState('language', $this->getUserStateFromRequest($this->context . '.language', 'language', '', 'string'));
 
 		$this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
@@ -102,10 +102,10 @@ class AssociationsModelAssociations extends JModelList
 			$this->setState('language', $forcedLanguage);
 		}
 
-		// Force a component.
-		if (!empty($forcedComponent))
+		// Force a component item type.
+		if (!empty($forcedItemType))
 		{
-			$this->setState('component', $forcedComponent);
+			$this->setState('itemtype', $forcedItemType);
 		}
 	}
 
@@ -125,7 +125,7 @@ class AssociationsModelAssociations extends JModelList
 	protected function getStoreId($id = '')
 	{
 		// Compile the store id.
-		$id .= ':' . $this->getState('component');
+		$id .= ':' . $this->getState('itemtype');
 		$id .= ':' . $this->getState('language');
 		$id .= ':' . $this->getState('filter.search');
 		$id .= ':' . $this->getState('filter.published');
@@ -147,115 +147,138 @@ class AssociationsModelAssociations extends JModelList
 	protected function getListQuery()
 	{
 		// Create a new query object.
-		$user      = JFactory::getUser();
-		$db        = $this->getDbo();
-		$query     = $db->getQuery(true);
-		$component = AssociationsHelper::getComponentProperties($this->getState('component'));
+		$user     = JFactory::getUser();
+		$db       = $this->getDbo();
+		$query    = $db->getQuery(true);
+		$itemType = AssociationsHelper::getItemTypeProperties($this->getState('itemtype'));
 
 		// Main query.
-		$query->select($db->quoteName('a.id'))
-			->select($db->quoteName('a.' . $component->fields->title, 'title'))
-			->select($db->quoteName('a.' . $component->fields->alias, 'alias'))
-			->from($db->quoteName($component->dbtable, 'a'));
+		$query->select($db->quoteName('a.' . $itemType->fields->id, 'id'))
+			->select($db->quoteName('a.' . $itemType->fields->title, 'title'))
+			->select($db->quoteName('a.' . $itemType->fields->alias, 'alias'))
+			->from($db->quoteName($itemType->dbtable, 'a'));
 
-		// Select author for ACL checks
-		if (!is_null($component->fields->created_by))
-		{
-			$query->select($db->quoteName('a.' . $component->fields->created_by));
-		}
-
-		// Select checked out data for check in checkins.
-		if (!is_null($component->fields->checked_out) && !is_null($component->fields->checked_out_time))
-		{
-			$query->select($db->quoteName('a.' . $component->fields->checked_out))
-				->select($db->quoteName('a.' . $component->fields->checked_out_time));
-
-			// Join over the users.
-			$query->select($db->quoteName('u.name', 'editor'))
-				->join('LEFT', $db->quoteName('#__users', 'u') . ' ON ' . $db->qn('u.id') . ' = ' . $db->qn('a.' . $component->fields->checked_out));
-		}
-
-		// Join over the language
-		$query->select($db->quoteName('a.' . $component->fields->language, 'language'))
+		// Join over the language.
+		$query->select($db->quoteName('a.' . $itemType->fields->language, 'language'))
 			->select($db->quoteName('l.title', 'language_title'))
 			->select($db->quoteName('l.image', 'language_image'))
-			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->qn('l.lang_code') . ' = ' . $db->qn('a.' . $component->fields->language));
+			->join('LEFT', $db->quoteName('#__languages', 'l') . ' ON ' . $db->qn('l.lang_code') . ' = ' . $db->qn('a.' . $itemType->fields->language));
 
 		// Join over the associations.
 		$query->select('COUNT(' . $db->quoteName('asso2.id') . ') > 1 AS ' . $db->quoteName('association'))
 			->join(
 				'LEFT',
-				$db->quoteName('#__associations', 'asso') . ' ON ' . $db->quoteName('asso.id') . ' = ' . $db->quoteName('a.id')
-				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($component->associations->context)
+				$db->quoteName('#__associations', 'asso') . ' ON ' . $db->quoteName('asso.id') . ' = ' . $db->quoteName('a.' . $itemType->fields->id)
+				. ' AND ' . $db->quoteName('asso.context') . ' = ' . $db->quote($itemType->associations->context)
 			)
-			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'))
-			->group($db->quoteName(array('a.id', 'title', 'language')));
+			->join('LEFT', $db->quoteName('#__associations', 'asso2') . ' ON ' . $db->quoteName('asso2.key') . ' = ' . $db->quoteName('asso.key'));
 
-		// If component supports ordering, select the ordering also.
-		if (!is_null($component->fields->ordering))
+		// Prepare the group by clause.
+		$groupby = array(
+			'a.' . $itemType->fields->id,
+			'a.' . $itemType->fields->title,
+			'a.' . $itemType->fields->language,
+			'l.title',
+			'l.image',
+		);
+
+		// Select author for ACL checks.
+		if (!is_null($itemType->fields->created_by))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->ordering, 'ordering'));
+			$query->select($db->quoteName('a.' . $itemType->fields->created_by));
 		}
 
-		// If component supports state, select the published state also.
-		if (!is_null($component->fields->published))
+		// Select checked out data for check in checkins.
+		if (!is_null($itemType->fields->checked_out) && !is_null($itemType->fields->checked_out_time))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->published, 'published'));
+			$query->select($db->quoteName('a.' . $itemType->fields->checked_out))
+				->select($db->quoteName('a.' . $itemType->fields->checked_out_time));
+
+			// Join over the users.
+			$query->select($db->quoteName('u.name', 'editor'))
+				->join('LEFT', $db->quoteName('#__users', 'u') . ' ON ' . $db->qn('u.id') . ' = ' . $db->qn('a.' . $itemType->fields->checked_out));
+
+			$groupby[] = 'u.name';
 		}
 
-		// If component supports level, select the level also.
-		if (!is_null($component->fields->level))
+		// If component item type supports ordering, select the ordering also.
+		if (!is_null($itemType->fields->ordering))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->level, 'level'));
+			$query->select($db->quoteName('a.' . $itemType->fields->ordering, 'ordering'));
 		}
 
-		// If component supports categories, select the category also.
-		if (!is_null($component->fields->catid))
+		// If component item type supports state, select the published state also.
+		if (!is_null($itemType->fields->published))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->catid, 'catid'))
-				->select($db->quoteName('c.title', 'category_title'))
-				->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $component->fields->catid));
+			$query->select($db->quoteName('a.' . $itemType->fields->published, 'published'));
 		}
 
-		// If component supports menu type, select the menu type also.
-		if (!is_null($component->fields->menutype))
+		// If component item type supports level, select the level also.
+		if (!is_null($itemType->fields->level))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->menutype, 'menutype'))
-				->select($db->quoteName('mt.title', 'menutype_title'))
+			$query->select($db->quoteName('a.' . $itemType->fields->level, 'level'));
+		}
+
+		// If component item type supports categories, select the category also.
+		if (!is_null($itemType->fields->catid))
+		{
+			$query->select($db->quoteName('a.' . $itemType->fields->catid, 'catid'));
+
+			// Join over the categories.
+			$query->select($db->quoteName('c.title', 'category_title'))
+				->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $itemType->fields->catid));
+
+			$groupby[] = 'c.title';
+		}
+
+		// If component item type supports menu type, select the menu type also.
+		if (!is_null($itemType->fields->menutype))
+		{
+			$query->select($db->quoteName('a.' . $itemType->fields->menutype, 'menutype'));
+
+			// Join over the menu types.
+			$query->select($db->quoteName('mt.title', 'menutype_title'))
 				->select($db->quoteName('mt.id', 'menutypeid'))
-				->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $component->fields->menutype));
+				->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $itemType->fields->menutype));
+
+			$groupby[] = 'mt.title';
+			$groupby[] = 'mt.id';
 		}
 
-		// If component supports access level, select the access level also.
-		if (!is_null($component->fields->access))
+		// If component item type supports access level, select the access level also.
+		if (!is_null($itemType->fields->access))
 		{
-			$query->select($db->quoteName('a.' . $component->fields->access, 'access'))
-				->select($db->quoteName('ag.title', 'access_level'))
-				->join('LEFT', $db->quoteName('#__viewlevels', 'ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $component->fields->access));
+			$query->select($db->quoteName('a.' . $itemType->fields->access, 'access'));
 
-			// Implement View Level Access
-			if (!$user->authorise('core.admin', $component->realcomponent))
+			// Join over the access levels.
+			$query->select($db->quoteName('ag.title', 'access_level'))
+				->join('LEFT', $db->quoteName('#__viewlevels', 'ag') . ' ON ' . $db->qn('ag.id') . ' = ' . $db->qn('a.' . $itemType->fields->access));
+
+			$groupby[] = 'ag.title';
+
+			// Implement View Level Access.
+			if (!$user->authorise('core.admin', $itemType->realcomponent))
 			{
-				$query->where('a.' . $component->fields->access . ' IN (' . implode(',', $user->getAuthorisedViewLevels()) . ')');
+				$query->where('a.' . $itemType->fields->access . ' IN (' . implode(',', $user->getAuthorisedViewLevels()) . ')');
 			}
 		}
 
-		// If component is menus we need to remove the root item and the administrator menu.
-		if ($component->dbtable === '#__menu')
+		// If component item type is menus we need to remove the root item and the administrator menu.
+		if ($itemType->component === 'com_menus')
 		{
-			$query->where($db->quoteName('a.id') . ' > 1')
+			$query->where($db->quoteName('a.' . $itemType->fields->id) . ' > 1')
 				->where($db->quoteName('a.client_id') . ' = 0');
 		}
-		// If component is categories we need to remove all other component categories.
-		elseif ($component->dbtable === '#__categories')
+		// If component item type is categories we need to remove all other component categories.
+		elseif ($itemType->component === 'com_categories')
 		{
-			$query->where($db->quoteName('a.extension') . ' = ' . $db->quote($component->extension));
+			$query->where($db->quoteName('a.extension') . ' = ' . $db->quote($itemType->extension));
 		}
 
 		// Filter on the language.
 		if ($language = $this->getState('language'))
 		{
-			$query->where($db->quoteName('a.' . $component->fields->language) . ' = ' . $db->quote($language));
+			$query->where($db->quoteName('a.' . $itemType->fields->language) . ' = ' . $db->quote($language));
 		}
 
 		// Filter by published state.
@@ -263,11 +286,11 @@ class AssociationsModelAssociations extends JModelList
 
 		if (is_numeric($published))
 		{
-			$query->where($db->quoteName('a.' . $component->fields->published) . ' = ' . (int) $published);
+			$query->where($db->quoteName('a.' . $itemType->fields->published) . ' = ' . (int) $published);
 		}
 		elseif ($published === '')
 		{
-			$query->where($db->quoteName('a.' . $component->fields->published) . ' IN (0, 1)');
+			$query->where($db->quoteName('a.' . $itemType->fields->published) . ' IN (0, 1)');
 		}
 
 		// Filter on the category.
@@ -278,6 +301,7 @@ class AssociationsModelAssociations extends JModelList
 			$categoryTable = JTable::getInstance('Category', 'JTable');
 			$categoryTable->load($categoryId);
 			$baselevel = (int) $categoryTable->level;
+
 			$query->where($db->quoteName('c.lft') . ' >= ' . (int) $categoryTable->lft)
 				->where($db->quoteName('c.rgt') . ' <= ' . (int) $categoryTable->rgt);
 		}
@@ -285,20 +309,20 @@ class AssociationsModelAssociations extends JModelList
 		// Filter on the level.
 		if ($level = $this->getState('filter.level'))
 		{
-			$tableAlias = in_array($component->component, array('com_menus', 'com_categories')) ? 'a' : 'c';
+			$tableAlias = in_array($itemType->component, array('com_menus', 'com_categories')) ? 'a' : 'c';
 			$query->where($db->quoteName($tableAlias . '.level') . ' <= ' . ((int) $level + (int) $baselevel - 1));
 		}
 
 		// Filter by menu type.
 		if ($menutype = $this->getState('filter.menutype'))
 		{
-			$query->where('a.' . $component->fields->menutype . ' = ' . $db->quote($menutype));
+			$query->where('a.' . $itemType->fields->menutype . ' = ' . $db->quote($menutype));
 		}
 
 		// Filter by access level.
 		if ($access = $this->getState('filter.access'))
 		{
-			$query->where('a.' . $component->fields->access . ' = ' . (int) $access);
+			$query->where('a.' . $itemType->fields->access . ' = ' . (int) $access);
 		}
 
 		// Filter by search in name.
@@ -306,19 +330,121 @@ class AssociationsModelAssociations extends JModelList
 		{
 			if (stripos($search, 'id:') === 0)
 			{
-				$query->where('a.id = ' . (int) substr($search, 3));
+				$query->where($db->quoteName('a.' . $itemType->fields->id) . ' = ' . (int) substr($search, 3));
 			}
 			else
 			{
 				$search = $db->quote('%' . str_replace(' ', '%', $db->escape(trim($search), true) . '%'));
-				$query->where('(' . $db->quoteName('a.' . $component->fields->title) . ' LIKE ' . $search
-					. ' OR ' . $db->quoteName('a.' . $component->fields->alias) . ' LIKE ' . $search . ')');
+				$query->where('(' . $db->quoteName('a.' . $itemType->fields->title) . ' LIKE ' . $search
+					. ' OR ' . $db->quoteName('a.' . $itemType->fields->alias) . ' LIKE ' . $search . ')');
 			}
 		}
+
+		// Add the group by clause
+		$query->group($db->quoteName($groupby));
 
 		// Add the list ordering clause.
 		$query->order($db->escape($this->getState('list.ordering') . ' ' . $this->getState('list.direction')));
 
 		return $query;
+	}
+
+	/**
+	 * Cleans out _associations table.
+	 *
+	 * @return  bool True on success
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function purge()
+	{
+		$db = $this->getDbo();
+
+		$query = $db->getQuery(true)
+			->select('COUNT(*)')
+			->from($db->quoteName('#__associations'))
+			->where($db->quoteName('id') . ' > 0');
+
+			$db->setQuery($query);
+
+			$count = $db->loadResult();
+
+		if ($count != 0)
+		{
+			// Get the localise data
+			$db->setQuery('TRUNCATE TABLE ' . $db->quoteName('#__associations'));
+
+			try
+			{
+				$db->execute();
+			}
+			catch (JDatabaseExceptionExecuting $e)
+			{
+				JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_FAILED', error));
+
+				return false;
+			}
+
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_SUCCESS'));
+		}
+		else
+		{
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_NONE'));
+		}
+
+		return true;
+	}
+
+	/**
+	 * Delete orphans from the _associations table.
+	 *
+	 * @return  bool True on success
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function clean()
+	{
+		$db = $this->getDbo();
+
+		$query = $db->getQuery(true)
+			->select($db->quoteName('key') . ', COUNT(*)')
+			->from($db->quoteName('#__associations'))
+			->group($db->quoteName('key'))
+			->having('COUNT(*) = 1');
+		$db->setQuery($query);
+
+		$assocKeys = $db->loadObjectList();
+
+		if ($assocKeys)
+		{
+			// We have orphans. Let's delete them.
+			foreach ($assocKeys as $value)
+			{
+				$query->clear()
+					->delete($db->quoteName('#__associations'))
+					->where($db->quoteName('key') . ' = ' . $db->quote($value->key));
+
+				$db->setQuery($query);
+
+				try
+				{
+					$db->execute();
+				}
+				catch (JDatabaseExceptionExecuting $e)
+				{
+					JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
+
+					return false;
+				}
+			}
+
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_SUCCESS'));
+		}
+		else
+		{
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_NONE'));
+		}
+
+		return true;
 	}
 }

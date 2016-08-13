@@ -150,10 +150,31 @@ jQuery(document).ready(function($) {
 
 	// Attach behaviour to reference frame load event.
 	$('#reference-association').on('load', function() {
-
+		var reference = $(this).contents();
 		// Disable language field.
-		$(this).contents().find('#jform_language_chzn').remove();
-		$(this).contents().find('#jform_language').attr('disabled', true).chosen();
+		reference.find('#jform_language_chzn').remove();
+		reference.find('#jform_language').attr('disabled', true).chosen();
+
+		// Remove modal buttons on the reference
+		reference.find('#associations').find('.btn').remove();
+		
+		var parse = '';
+
+		$('#jform_itemlanguage option').each(function()
+		{
+			parse = $(this).val().split(':');
+
+			if (typeof parse[0] !== 'undefined')
+			{
+				// - For modal association selectors.
+				langAssociation = parse[0].replace(/-/,'_');
+				if (reference.find('#jform_associations_' + langAssociation + '_id').val() == '')
+				{
+					reference.find('#jform_associations_' + langAssociation + '_name')
+						.val(document.getElementById('reference-association').getAttribute('data-no-assoc'));
+				}
+			}
+		});
 
 		// Later usage copy function?
 		//$('#toolbar-copy').children().first().attr('onclick', 'return copyRefToTarget()');
@@ -178,6 +199,16 @@ jQuery(document).ready(function($) {
 			// Hide associations tab.
 			$(this).contents().find('a[href=\"#associations\"]').parent().hide();
 
+			// Always show General tab first if associations tab is selected on the reference
+			if ($(this).contents().find('#associations').hasClass('active'))
+			{
+				$(this).contents().find('a[href=\"#associations\"]').parent().removeClass('active');
+				$(this).contents().find('#associations').removeClass('active');
+
+				$(this).contents().find('.nav-tabs').find('li').first().addClass('active');
+				$(this).contents().find('.tab-content').find('.tab-pane').first().addClass('active');
+			}
+
 			// Update language field with the selected language and them disable it.
 			$(this).contents().find('#jform_language_chzn').remove();
 			$(this).contents().find('#jform_language').val(targetLanguage).change().attr('disabled', true).chosen();
@@ -190,6 +221,7 @@ jQuery(document).ready(function($) {
 			// If we are editing a association.
 			else 
 			{
+				// Show change language button
 				document.getElementById('select-change-text').innerHTML =  document.getElementById('select-change').getAttribute('data-change');
 				$('#remove-assoc').removeClass("hidden");
 

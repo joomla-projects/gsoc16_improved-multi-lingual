@@ -38,80 +38,65 @@ class JFormFieldItemLanguage extends JFormFieldList
 	protected function getOptions()
 	{
 		$input       = JFactory::getApplication()->input;
-		$component   = AssociationsHelper::getComponentProperties($input->get('component', '', 'string'));
+		$itemType    = AssociationsHelper::getItemTypeProperties($input->get('itemtype', '', 'string'));
 		$referenceId = $input->get('id', 0, 'int');
 
-		JLoader::register($component->associations->gethelper->class, $component->associations->gethelper->file);
+		// Get reference language.
+		$table = clone $itemType->table;
+		$table->load($referenceId);
+		$referenceLang = $table->{$itemType->fields->language};
 
 		// Get item associations given ID and item type
-		$associations = call_user_func(
-				array(
-					$component->associations->gethelper->class, 
-					$component->associations->gethelper->method
-				),
-				$referenceId,
-				(!is_null($component->extension) ? $component->extension : $component->item)
-			);
+		$associations = AssociationsHelper::getAssociationList($itemType, $referenceId);
 
-		// Get reference language.
-		$table = clone $component->table;
-		$table->load($referenceId);
-		$referenceLang = $table->{$component->fields->language};
-
-		// Check if user can create items in this component.
-		$canCreate = AssociationsHelper::allowAdd($component, null);
+		// Check if user can create items in this component item type.
+		$canCreate = AssociationsHelper::allowAdd($itemType, null);
 
 		// Gets existing languages.
-		$existingLanguages = JHtml::_('contentlanguage.existing', false, true);
+		$existingLanguages = AssociationsHelper::getContentLanguages();
+
+		$options = array();
 
 		// Each option has the format "<lang>|<id>", example: "en-GB|1"
-		foreach ($existingLanguages as $key => $lang)
+		foreach ($existingLanguages as $langCode => $language)
 		{
-			// If is equal to reference language
-			if ($lang->value == $referenceLang)
+			// If language code is equal to reference language we don't need it.
+			if ($language->lang_code == $referenceLang)
 			{
-				unset($existingLanguages[$key]);
+				continue;
 			}
 
-			// If association exists in this language
-			if (isset($associations[$lang->value]))
-			{
-				// If it's a menu, there are some strings needed to be removed
-				if ($component->component != 'com_menus')
-				{
-					parse_str($associations[$lang->value], $contents);
-					$removeExtra  = explode(":", $contents['id']);
-					$itemId       = $removeExtra[0];
-					$lang->value  = $lang->value . ':' . $itemId . ':edit';
-				}
-				else
-				{
-					$itemId      = $associations[$lang->value];
-					$lang->value = $lang->value . ':' . $associations[$lang->value] . ':edit';
-				}
+			$options[$langCode]       = new stdClass;
+			$options[$langCode]->text = $language->title;
 
-				// Load item.
+			// If association exists in this language.
+			if (isset($associations[$language->lang_code]))
+			{
+				$itemId                    = (int) $associations[$language->lang_code]->id;
+				$options[$langCode]->value = $language->lang_code . ':' . $itemId . ':edit';
+
+				// Load the item.
 				$table->load($itemId);
 
 				 // Check if user does have permission to edit the associated item.
-				$canEdit = AssociationsHelper::allowEdit($component, $table);
+				$canEdit = AssociationsHelper::allowEdit($itemType, $table);
 
-				// Do an additional check to check if user can edit a checked out item (if component supports it).
-				$canCheckout = AssociationsHelper::allowCheckActions($component, $table);
+				// Do an additional check to check if user can edit a checked out item (if component item type supports it).
+				$canCheckout = AssociationsHelper::allowCheckActions($itemType, $table);
 
 				// Disable language if user is not allowed to edit the item associated to it.
-				$lang->disable = !($canEdit && $canCheckout);
+				$options[$langCode]->disable = !($canEdit && $canCheckout);
 			}
 			else
 			{
-				// New item, id = 0 and disabled if user is not allowed to create new items
-				$lang->value  .= ':0:add';
-				$lang->disable = !$canCreate;
+				// New item, id = 0 and disabled if user is not allowed to create new items.
+				$options[$langCode]->value   = $language->lang_code . ':0:add';
+
+				// Disable language if user is not allowed to create items.
+				$options[$langCode]->disable = !$canCreate;
 			}
 		}
 
-		$options = array_merge(parent::getOptions(), $existingLanguages);
-
-		return $options;
+		return array_merge(parent::getOptions(), $options);
 	}
 }

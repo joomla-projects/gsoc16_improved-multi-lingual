@@ -15,14 +15,13 @@ if ($data['view'] instanceof AssociationsViewAssociations)
 {
 	$app = JFactory::getApplication();
 
-	// We will get the component and language filters & remove it from the form filters
-	if ($app->input->get('forcedComponent', '', 'string') == '')
+	// We will get the component item type and language filters & remove it from the form filters.
+	if ($app->input->get('forcedItemType', '', 'string') == '')
 	{
-		$componentTypeField = $data['view']->filterForm->getField('component');
-	
+		$itemTypeField = $data['view']->filterForm->getField('itemtype');
 ?>
 	<div class="js-stools-field-filter js-stools-selector">
-		<?php echo $componentTypeField->input; ?>
+		<?php echo $itemTypeField->input; ?>
 	</div>
 <?php
 	}

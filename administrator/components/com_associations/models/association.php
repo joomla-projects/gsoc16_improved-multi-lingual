@@ -30,7 +30,7 @@ class AssociationsModelAssociation extends JModelList
 	{
 		// Get the form.
 		$form = $this->loadForm('com_associations.association', 'association', array('control' => 'jform', 'load_data' => $loadData));
-		
+
 		return !empty($form) ? $form : false;
 	}
 }

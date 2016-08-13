@@ -31,12 +31,12 @@ class AssociationsControllerAssociation extends JControllerForm
 	 */
 	public function edit($key = null, $urlVar = null)
 	{
-		$cp   = AssociationsHelper::getComponentProperties($this->input->get('component', '', 'string'));
-		$table = clone $cp->table;
+		$itemType = AssociationsHelper::getItemTypeProperties($this->input->get('itemtype', '', 'string'));
+		$table    = clone $itemType->table;
 		$table->load($this->input->get('id', 0, 'int'));
 
 		// Check if reference item can be edited.
-		if (!AssociationsHelper::allowEdit($cp, $table))
+		if (!AssociationsHelper::allowEdit($itemType, $table))
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('JLIB_APPLICATION_ERROR_EDIT_NOT_PERMITTED'), 'error');
 			$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
@@ -45,9 +45,9 @@ class AssociationsControllerAssociation extends JControllerForm
 		}
 
 		// Check if reference item can be checked out.
-		if (is_null($cp->fields->checked_out) || !$cp->model->checkout($table->id))
+		if (is_null($itemType->fields->checked_out) || !$itemType->model->checkout($table->id))
 		{
-			JFactory::getApplication()->enqueueMessage(JText::sprintf('JLIB_APPLICATION_ERROR_CHECKOUT_FAILED', $cp->model->getError()), 'error');
+			JFactory::getApplication()->enqueueMessage(JText::sprintf('JLIB_APPLICATION_ERROR_CHECKOUT_FAILED', $itemType->model->getError()), 'error');
 			$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
 
 			return false;
@@ -69,13 +69,13 @@ class AssociationsControllerAssociation extends JControllerForm
 	{
 		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
-		$cp = AssociationsHelper::getComponentProperties($this->input->get('component', '', 'string'));
+		$itemType = AssociationsHelper::getItemTypeProperties($this->input->get('itemtype', '', 'string'));
 
-		// Only check in, if component allows to check out.
-		if (!is_null($cp->fields->checked_out))
+		// Only check in, if component item type allows to check out.
+		if (!is_null($itemType->fields->checked_out))
 		{
 			// Check-in reference id.
-			$cp->table->checkin($this->input->get('id', null, 'int'));
+			$itemType->table->checkin($this->input->get('id', null, 'int'));
 
 			// Check-in all ithe target ids (can be several, one for each language).
 			if ($targetsId = $this->input->get('target-id', '', 'string'))
@@ -84,7 +84,7 @@ class AssociationsControllerAssociation extends JControllerForm
 
 				foreach ($targetsId as $key => $targetId)
 				{
-					$cp->table->checkin((int) $targetId);
+					$itemType->table->checkin((int) $targetId);
 				}
 			}
 		}

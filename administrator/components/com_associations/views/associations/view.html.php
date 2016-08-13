@@ -46,13 +46,13 @@ class AssociationsViewAssociations extends JViewLegacy
 	protected $state;
 
 	/**
-	 * Selected component
+	 * Selected item type properties.
 	 *
 	 * @var  Registry
 	 *
 	 * @since __DEPLOY_VERSION__
 	 */
-	public $component = null;
+	public $itemType = null;
 
 	/**
 	 * Display the view
@@ -73,59 +73,59 @@ class AssociationsViewAssociations extends JViewLegacy
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_ERROR_NO_ASSOC'), 'warning');
 		}
-		elseif ($this->state->get('component') == '' || $this->state->get('language') == '')
+		elseif ($this->state->get('itemtype') == '' || $this->state->get('language') == '')
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_NOTICE_NO_SELECTORS'), 'notice');
 		}
 		else
 		{
-			$this->component = AssociationsHelper::getComponentProperties($this->state->get('component'));
+			$this->itemType = AssociationsHelper::getItemTypeProperties($this->state->get('itemtype'));
 
 			// Dynamic filter form.
 			// This selectors doesn't have to activate the filter bar.
-			unset($this->activeFilters['component']);
+			unset($this->activeFilters['itemtype']);
 			unset($this->activeFilters['language']);
-			
-			// Remove filters options depending on selected component.
-			if (is_null($this->component) || is_null($this->component->fields->published))
+
+			// Remove filters options depending on selected itemtype.
+			if (is_null($this->itemType) || is_null($this->itemType->fields->published))
 			{
 				unset($this->activeFilters['published']);
 				$this->filterForm->removeField('published', 'filter');
 			}
-			if (is_null($this->component) || is_null($this->component->fields->catid))
+			if (is_null($this->itemType) || is_null($this->itemType->fields->catid))
 			{
 				unset($this->activeFilters['category_id']);
 				$this->filterForm->removeField('category_id', 'filter');
 			}
-			if (is_null($this->component) || is_null($this->component->fields->menutype))
+			if (is_null($this->itemType) || is_null($this->itemType->fields->menutype))
 			{
 				unset($this->activeFilters['menutype']);
 				$this->filterForm->removeField('menutype', 'filter');
 			}
-			if (is_null($this->component)
-				|| (is_null($this->component->fields->catid) && !in_array($this->component->component, array('com_categories', 'com_menus'))))
+			if (is_null($this->itemType)
+				|| (is_null($this->itemType->fields->catid) && !in_array($this->itemType->component, array('com_categories', 'com_menus'))))
 			{
 				unset($this->activeFilters['level']);
 				$this->filterForm->removeField('level', 'filter');
 			}
-			if (is_null($this->component) || is_null($this->component->fields->access))
+			if (is_null($this->itemType) || is_null($this->itemType->fields->access))
 			{
 				unset($this->activeFilters['access']);
 				$this->filterForm->removeField('access', 'filter');
 			}
 
 			// Add extension attribute to category filter.
-			if (!is_null($this->component) && !is_null($this->component->fields->catid))
+			if (!is_null($this->itemType) && !is_null($this->itemType->fields->catid))
 			{
-				$this->filterForm->setFieldAttribute('category_id', 'extension', $this->component->component, 'filter');
+				$this->filterForm->setFieldAttribute('category_id', 'extension', $this->itemType->component, 'filter');
 			}
-	
-			// Only allow ordering by what the component allows.
-			if (in_array($this->state->get('list.ordering', $this->component->defaultOrdering[0]), $this->component->excludeOrdering))
+
+			// Only allow ordering by what the component item type allows.
+			if (in_array($this->state->get('list.ordering', $this->itemType->defaultOrdering[0]), $this->itemType->excludeOrdering))
 			{
-				$this->state->set('list.ordering', $this->component->defaultOrdering[0]);
-				$this->state->set('list.direction', $this->component->defaultOrdering[1]);
-				$this->filterForm->setValue('fullordering', 'list', $this->component->defaultOrdering[0] . ' ' . $this->component->defaultOrdering[1]);
+				$this->state->set('list.ordering', $this->itemType->defaultOrdering[0]);
+				$this->state->set('list.direction', $this->itemType->defaultOrdering[1]);
+				$this->filterForm->setValue('fullordering', 'list', $this->itemType->defaultOrdering[0] . ' ' . $this->itemType->defaultOrdering[1]);
 			}
 
 			$this->items      = $this->get('Items');
@@ -133,14 +133,11 @@ class AssociationsViewAssociations extends JViewLegacy
 
 			$linkParameters = array(
 				'layout'     => 'edit',
-				'component'  => $this->state->get('component'),
+				'itemtype'   => $this->itemType->key,
 				'task'       => 'association.edit',
 			);
 
 			$this->editUri = 'index.php?option=com_associations&view=association&' . http_build_query($linkParameters);
-
-			// Load the current component html helper class.
-			JLoader::register($this->component->associations->htmlhelper->class, $this->component->associations->htmlhelper->file);
 		}
 
 		// Check for errors.
@@ -174,13 +171,18 @@ class AssociationsViewAssociations extends JViewLegacy
 		*/
 		// JToolbarHelper::editList('association.edit');
 
-		if (isset($this->component) && !is_null($this->component->fields->checked_out))
+		if (isset($this->itemType) && !is_null($this->itemType->fields->checked_out))
 		{
 			JToolbarHelper::checkin('associations.checkin', 'JTOOLBAR_CHECKIN', true);
 		}
 
 		if ($user->authorise('core.admin', 'com_associations') || $user->authorise('core.options', 'com_associations'))
 		{
+			if (!isset($this->itemType))
+			{
+				JToolbarHelper::custom('associations.purge', 'purge', 'purge', 'COM_ASSOCIATIONS_PURGE', false, false);
+				JToolbarHelper::custom('associations.clean', 'refresh', 'refresh', 'COM_ASSOCIATIONS_DELETE_ORPHANS', false, false);
+			}
 			JToolbarHelper::preferences('com_associations');
 		}
 

@@ -13,11 +13,11 @@ JLoader::register('AssociationsHelper', JPATH_ADMINISTRATOR . '/components/com_a
 JFormHelper::loadFieldClass('groupedlist');
 
 /**
- * A drop down containing all components that implement associations
+ * A drop down containing all component item types that implement associations.
  *
  * @since  __DEPLOY_VERSION__
  */
-class JFormFieldAssociatedComponent extends JFormFieldGroupedList
+class JFormFieldItemType extends JFormFieldGroupedList
 {
 	/**
 	 * The form field type.
@@ -26,7 +26,7 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 	 *
 	 * @since  __DEPLOY_VERSION__
 	 */
-	protected $type = 'AssociatedComponent';
+	protected $type = 'ItemType';
 	
 	/**
 	 * Method to get the field input markup.
@@ -40,10 +40,11 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 	{
 		$user              = JFactory::getUser();
 		$options           = array();
-		$typeAliasList     = array();
+		$itemTypeList      = array();
 		$excludeComponents = array(
 			'com_admin',
 			'com_ajax',
+			'com_associations',
 			'com_cache',
 			'com_checkin',
 			'com_config',
@@ -82,25 +83,35 @@ class JFormFieldAssociatedComponent extends JFormFieldGroupedList
 			// Check if component uses associations, by checking is models.
 			foreach (glob($componentModelsPath . '/*.php', GLOB_NOSORT) as $modelFile)
 			{
-				$cp = AssociationsHelper::getComponentProperties($component . '.' . strtolower(basename($modelFile, '.php')));
+				$itemType = AssociationsHelper::getItemTypeProperties($component . '.' . strtolower(basename($modelFile, '.php')));
 
-				// Check if component supports associations.
-				if ($cp->enabled && $cp->associations->support && $cp->associations->supportItem && !in_array($cp->typeAlias, $typeAliasList))
+				if ($itemType->componentEnabled)
 				{
-					// Add component option select box.
-					$options[$cp->title][] = JHtml::_('select.option', $cp->typeAlias, $cp->itemsTitle);
+					// Check if component item type supports associations. Add item option to select box if so.
+					if ($itemType->associations->support && !in_array($itemType->assetKey, $itemTypeList))
+					{
+						$options[$itemType->componentTitle][] = JHtml::_('select.option', $itemType->assetKey, $itemType->title);
 
-					array_push($typeAliasList, $cp->typeAlias);
+						array_push($itemTypeList, $itemType->assetKey);
+					}
+
+					$itemCategoryType = AssociationsHelper::getItemTypeProperties($itemType->categoryContext . '.category');
+
+					// Check if component item type support categories. Add category option to select box if so.
+					if (isset($itemType->fields)
+						&& !is_null($itemType->fields->catid)
+						&& $itemCategoryType->associations->support
+						&& !in_array($itemCategoryType->assetKey, $itemTypeList))
+					{
+						$options[$itemCategoryType->componentTitle][] = JHtml::_(
+							'select.option',
+							$itemCategoryType->assetKey,
+							$itemCategoryType->title
+						);
+
+						array_push($itemTypeList, $itemCategoryType->assetKey);
+					}
 				}
-			}
-
-			// Check if component uses categories with associations. Add category option to select box if so.
-			$cp = AssociationsHelper::getComponentProperties($component);
-
-			// Check if component uses categories with associations. Add category option to select box if so.
-			if ($cp->enabled && $cp->associations->supportCategories)
-			{
-				$options[$cp->title][] = JHtml::_('select.option', 'com_categories.category:' . $cp->realcomponent, $cp->categoriesTitle);
 			}
 		}
 
