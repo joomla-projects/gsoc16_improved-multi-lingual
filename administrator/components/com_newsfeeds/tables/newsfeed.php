@@ -17,6 +17,16 @@ defined('_JEXEC') or die;
 class NewsfeedsTableNewsfeed extends JTable
 {
 	/**
+	 * Mapping of column alias.
+	 *
+	 * @var    array
+	 * @since  __DEPLOY_VERSION__
+	 */
+	protected $_columnAlias = array(
+		'title' => 'name',
+	);
+
+	/**
 	 * Ensure the params, metadata and images are json encoded in the bind method
 	 *
 	 * @var    array
