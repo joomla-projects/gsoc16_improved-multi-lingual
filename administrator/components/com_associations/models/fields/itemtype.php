@@ -45,6 +45,7 @@ class JFormFieldItemType extends JFormFieldGroupedList
 			'com_admin',
 			'com_ajax',
 			'com_associations',
+			'com_banners',
 			'com_cache',
 			'com_checkin',
 			'com_config',
@@ -67,6 +68,12 @@ class JFormFieldItemType extends JFormFieldGroupedList
 			'com_templates',
 			'com_users',
 		);
+		$excludeItemTypes = array(
+			'com_contact'   => array('contacts'),
+			'com_content'   => array('articles', 'featured'),
+			'com_menus'     => array('items', 'menu', 'menus', 'menutypes'),
+			'com_newsfeeds' => array('newsfeeds'),
+		);
 
 		// Get all admin components.
 		foreach (glob(JPATH_ADMINISTRATOR . '/components/*', GLOB_NOSORT | GLOB_ONLYDIR) as $componentAdminPath)
@@ -83,7 +90,15 @@ class JFormFieldItemType extends JFormFieldGroupedList
 			// Check if component uses associations, by checking is models.
 			foreach (glob($componentModelsPath . '/*.php', GLOB_NOSORT) as $modelFile)
 			{
-				$itemType = AssociationsHelper::getItemTypeProperties($component . '.' . strtolower(basename($modelFile, '.php')));
+				$itemTypeName = strtolower(basename($modelFile, '.php'));
+
+				// Only item types that aren't in the excluded components item types array.
+				if (isset($excludeItemTypes[$component]) && in_array($itemTypeName, $excludeItemTypes[$component]))
+				{
+					continue;
+				}
+
+				$itemType = AssociationsHelper::getItemTypeProperties($component . '.' . $itemTypeName);
 
 				if ($itemType->componentEnabled)
 				{
