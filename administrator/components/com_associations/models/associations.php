@@ -422,7 +422,7 @@ class AssociationsModelAssociations extends JModelList
 				{
 					$db->execute();
 				}
-					catch (JDatabaseExceptionExecuting $e)
+				catch (JDatabaseExceptionExecuting $e)
 				{
 					JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
 
