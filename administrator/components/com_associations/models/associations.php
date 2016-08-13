@@ -399,27 +399,35 @@ class AssociationsModelAssociations extends JModelList
 
 		$assocKeys = $db->loadObjectList();
 
-		foreach ($assocKeys as $value)
+		if ($assocKeys)
 		{
-			$query->clear()
-				->delete($db->quoteName('#__associations'))
-				->where($db->quoteName('key') . ' = ' . $db->quote($value->key));
-
-			$db->setQuery($query);
-
-			try
+			// We have orphans. Let's delete them.
+			foreach ($assocKeys as $value)
 			{
-				$db->execute();
-			}
-			catch (JDatabaseExceptionExecuting $e)
-			{
-				JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
+				$query->clear()
+					->delete($db->quoteName('#__associations'))
+					->where($db->quoteName('key') . ' = ' . $db->quote($value->key));
 
-				return false;
+				$db->setQuery($query);
+
+				try
+				{
+					$db->execute();
+				}
+				catch (JDatabaseExceptionExecuting $e)
+				{
+					JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
+
+					return false;
+				}
 			}
+
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_SUCCESS'));
 		}
-
-		JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_SUCCESS'));
+		else
+		{
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_NONE'));
+		}
 
 		return true;
 	}

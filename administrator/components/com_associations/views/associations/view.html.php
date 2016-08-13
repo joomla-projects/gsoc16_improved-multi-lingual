@@ -184,7 +184,7 @@ class AssociationsViewAssociations extends JViewLegacy
 			if (!isset($this->component))
 			{
 				JToolbarHelper::custom('associations.purge', 'purge', 'purge', 'COM_ASSOCIATIONS_PURGE', false, false);
-				JToolbarHelper::custom('associations.clean', 'purge', 'purge', 'COM_ASSOCIATIONS_DELETE_ORPHANS', false, false);
+				JToolbarHelper::custom('associations.clean', 'refresh', 'refresh', 'COM_ASSOCIATIONS_DELETE_ORPHANS', false, false);
 			}
 			JToolbarHelper::preferences('com_associations');
 		}
