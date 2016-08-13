@@ -360,21 +360,37 @@ class AssociationsModelAssociations extends JModelList
 	{
 		$db = $this->getDbo();
 
-		// Get the localise data
-		$db->setQuery('TRUNCATE TABLE ' . $db->quoteName('#__associations'));
+		$query = $db->getQuery(true)
+			->select('COUNT(*)')
+			->from($db->quoteName('#__associations'))
+			->where($db->quoteName('id') . ' > 0');
 
-		try
+			$db->setQuery($query);
+
+			$count = $db->loadResult();
+
+		if ($count != 0)
 		{
-			$db->execute();
+			// Get the localise data
+			$db->setQuery('TRUNCATE TABLE ' . $db->quoteName('#__associations'));
+
+			try
+			{
+				$db->execute();
+			}
+			catch (JDatabaseExceptionExecuting $e)
+			{
+				JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_FAILED', error));
+
+				return false;
+			}
+
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_SUCCESS'));
 		}
-		catch (JDatabaseExceptionExecuting $e)
+		else
 		{
-			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_FAILED', error));
-
-			return false;
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_NONE'));
 		}
-
-		JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_SUCCESS'));
 
 		return true;
 	}
