@@ -241,28 +241,27 @@ class AssociationsHelper extends JHelperContent
 
 			// Get the table fields.
 			$cp[$key]->tableFields = $cp[$key]->table->getFields();
-			$cp[$key]->fields      = new Registry;
-			$fields                = array(
-				'id',
-				'title',
-				'alias',
-				'ordering',
-				'menutype',
-				'level',
-				'catid',
-				'language',
-				'access',
-				'published',
-				'created_by',
-				'checked_out',
-				'checked_out_time',
-			);
 
-			foreach ($fields as $field)
-			{
-				$tableField                 = $cp[$key]->table->getColumnAlias($field);
-				$cp[$key]->fields->{$field} = isset($cp[$key]->tableFields[$tableField]) ? $tableField : null;
-			}
+			// Component fields
+			// @todo This need should be checked hardcoding.
+			$cp[$key]->fields                   = new Registry;
+			$cp[$key]->fields->id               = isset($cp[$key]->tableFields['id']) ? 'id' : null;
+			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['name']) ? 'name' : null;
+			$cp[$key]->fields->title            = isset($cp[$key]->tableFields['title']) ? 'title' : $cp[$key]->fields->title;
+			$cp[$key]->fields->alias            = isset($cp[$key]->tableFields['alias']) ? 'alias' : null;
+			$cp[$key]->fields->ordering         = isset($cp[$key]->tableFields['ordering']) ? 'ordering' : null;
+			$cp[$key]->fields->ordering         = isset($cp[$key]->tableFields['lft']) ? 'lft' : $cp[$key]->fields->ordering;
+			$cp[$key]->fields->menutype         = isset($cp[$key]->tableFields['menutype']) ? 'menutype' : null;
+			$cp[$key]->fields->level            = isset($cp[$key]->tableFields['level']) ? 'level' : null;
+			$cp[$key]->fields->catid            = isset($cp[$key]->tableFields['catid']) ? 'catid' : null;
+			$cp[$key]->fields->language         = isset($cp[$key]->tableFields['language']) ? 'language' : null;
+			$cp[$key]->fields->access           = isset($cp[$key]->tableFields['access']) ? 'access' : null;
+			$cp[$key]->fields->published        = isset($cp[$key]->tableFields['state']) ? 'state' : null;
+			$cp[$key]->fields->published        = isset($cp[$key]->tableFields['published']) ? 'published' : $cp[$key]->fields->published;
+			$cp[$key]->fields->created_by       = isset($cp[$key]->tableFields['created_user_id']) ? 'created_user_id' : null;
+			$cp[$key]->fields->created_by       = isset($cp[$key]->tableFields['created_by']) ? 'created_by' : $cp[$key]->fields->created_by;
+			$cp[$key]->fields->checked_out      = isset($cp[$key]->tableFields['checked_out']) ? 'checked_out' : null;
+			$cp[$key]->fields->checked_out_time = isset($cp[$key]->tableFields['checked_out_time']) ? 'checked_out_time' : null;
 
 			// Disallow ordering according to component.
 			$cp[$key]->excludeOrdering = array();
