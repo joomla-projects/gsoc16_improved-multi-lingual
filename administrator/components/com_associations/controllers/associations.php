@@ -100,4 +100,18 @@ class AssociationsControllerAssociations extends JControllerAdmin
 		$model->purge();
 		$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
 	}
+
+	/**
+	 * Method to delete the orphans from the associations table.
+	 *
+	 * @return  void
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function clean()
+	{
+		$model = $this->getModel('associations');
+		$model->clean();
+		$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
+	}
 }

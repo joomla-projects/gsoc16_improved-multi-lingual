@@ -369,12 +369,69 @@ class AssociationsModelAssociations extends JModelList
 		}
 		catch (JDatabaseExceptionExecuting $e)
 		{
-			JFactory::getApplication()->enqueueMessage('COM_ASSOCIATIONS_PURGE_FAILED', error);
+			JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_FAILED', error));
 
 			return false;
 		}
 
 		JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_PURGE_SUCCESS'));
+
+		return true;
+	}
+
+	/**
+	 * Delete orphans from the _associations table.
+	 *
+	 * @return  bool True on success
+	 *
+	 * @since   __DEPLOY_VERSION__
+	 */
+	public function clean()
+	{
+		$db = $this->getDbo();
+
+		$query = $db->getQuery(true)
+			->select('DISTINCT' . $db->quoteName('a.key') . ',' . $db->quoteName('a.id'))
+			->from($db->quoteName('#__associations', 'a'));
+		$db->setQuery($query);
+
+		$assocKeys = $db->loadObjectList();
+
+		foreach ($assocKeys as $value)
+		{
+			$keyValue = $value->key;
+			$id       = $value->id;
+			$query->clear()
+				->select('COUNT(*)')
+				->from($db->quoteName('#__associations', 'a'))
+				->where($db->quoteName('a.key') . ' = ' . $db->quote($keyValue));
+			$db->setQuery($query);
+
+			$count = $db->loadResult();
+
+			// Delete orphans
+			if ($count == 1)
+			{
+				$query->clear()
+					->delete($db->quoteName('#__associations'))
+					->where($db->quoteName('id') . ' = ' . $db->quote($id));
+
+				$db->setQuery($query);
+
+				try
+				{
+					$db->execute();
+				}
+					catch (JDatabaseExceptionExecuting $e)
+				{
+					JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
+
+					return false;
+				}
+			}
+		}
+
+		JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_SUCCESS'));
 
 		return true;
 	}

@@ -27,14 +27,14 @@ $iconStates       = array(
 	2  => 'icon-archive',
 );
 
-JText::script('COM_ASSOCIATION_PURGE_CONFIRM_PROMPT');
+JText::script('COM_ASSOCIATIONS_PURGE_CONFIRM_PROMPT');
 
 JFactory::getDocument()->addScriptDeclaration('
 	Joomla.submitbutton = function(pressbutton)
 	{
 		if (pressbutton == "associations.purge")
 		{
-			if (confirm(Joomla.JText._("COM_ASSOCIATION_PURGE_CONFIRM_PROMPT")))
+			if (confirm(Joomla.JText._("COM_ASSOCIATIONS_PURGE_CONFIRM_PROMPT")))
 			{
 				Joomla.submitform(pressbutton);
 			}
@@ -42,6 +42,10 @@ JFactory::getDocument()->addScriptDeclaration('
 			{
 				return false;
 			}
+		}
+		else
+		{
+			Joomla.submitform(pressbutton);
 		}
 	};
 ');
