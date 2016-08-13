@@ -85,7 +85,7 @@ class AssociationsViewAssociations extends JViewLegacy
 			// This selectors doesn't have to activate the filter bar.
 			unset($this->activeFilters['itemtype']);
 			unset($this->activeFilters['language']);
-			
+
 			// Remove filters options depending on selected itemtype.
 			if (is_null($this->itemType) || is_null($this->itemType->fields->published))
 			{
@@ -119,7 +119,7 @@ class AssociationsViewAssociations extends JViewLegacy
 			{
 				$this->filterForm->setFieldAttribute('category_id', 'extension', $this->itemType->component, 'filter');
 			}
-	
+
 			// Only allow ordering by what the component item type allows.
 			if (in_array($this->state->get('list.ordering', $this->itemType->defaultOrdering[0]), $this->itemType->excludeOrdering))
 			{
