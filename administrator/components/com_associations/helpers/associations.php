@@ -239,7 +239,7 @@ class AssociationsHelper extends JHelperContent
 			$cp[$key]->table   = $cp[$key]->model->getTable();
 			$cp[$key]->dbtable = $cp[$key]->table->get('_tbl');
 
-			// Get the database table fields.
+			// Get the table fields.
 			$cp[$key]->tableFields = $cp[$key]->table->getFields();
 			$cp[$key]->fields      = new Registry;
 			$fields                = array(
