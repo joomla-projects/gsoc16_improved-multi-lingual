@@ -391,43 +391,31 @@ class AssociationsModelAssociations extends JModelList
 		$db = $this->getDbo();
 
 		$query = $db->getQuery(true)
-			->select('DISTINCT' . $db->quoteName('a.key') . ',' . $db->quoteName('a.id'))
-			->from($db->quoteName('#__associations', 'a'));
+			->select($db->quoteName('key') . ', COUNT(*)')
+			->from($db->quoteName('#__associations'))
+			->group($db->quoteName('key'))
+			->having('COUNT(*) = 1');
 		$db->setQuery($query);
 
 		$assocKeys = $db->loadObjectList();
 
 		foreach ($assocKeys as $value)
 		{
-			$keyValue = $value->key;
-			$id       = $value->id;
 			$query->clear()
-				->select('COUNT(*)')
-				->from($db->quoteName('#__associations', 'a'))
-				->where($db->quoteName('a.key') . ' = ' . $db->quote($keyValue));
+				->delete($db->quoteName('#__associations'))
+				->where($db->quoteName('key') . ' = ' . $db->quote($value->key));
+
 			$db->setQuery($query);
 
-			$count = $db->loadResult();
-
-			// Delete orphans
-			if ($count == 1)
+			try
 			{
-				$query->clear()
-					->delete($db->quoteName('#__associations'))
-					->where($db->quoteName('id') . ' = ' . $db->quote($id));
+				$db->execute();
+			}
+			catch (JDatabaseExceptionExecuting $e)
+			{
+				JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
 
-				$db->setQuery($query);
-
-				try
-				{
-					$db->execute();
-				}
-				catch (JDatabaseExceptionExecuting $e)
-				{
-					JFactory::getApplication()->enqueueMessage(JText::_('COM_ASSOCIATIONS_DELETE_ORPHANS_FAILED', error));
-
-					return false;
-				}
+				return false;
 			}
 		}
 
