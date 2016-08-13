@@ -118,8 +118,8 @@ class AssociationsHelper extends JHelperContent
 			$it[$key]->dbtable = $it[$key]->table->get('_tbl');
 
 			// Get the database item type table fields.
-			$cp[$key]->tableFields = $cp[$key]->table->getFields();
-			$cp[$key]->fields      = new Registry;
+			$it[$key]->tableFields = $it[$key]->table->getFields();
+			$it[$key]->fields      = new Registry;
 			$fields                = array(
 				'id',
 				'title',
@@ -138,8 +138,8 @@ class AssociationsHelper extends JHelperContent
 
 			foreach ($fields as $field)
 			{
-				$tableField                 = $cp[$key]->table->getColumnAlias($field);
-				$cp[$key]->fields->{$field} = isset($cp[$key]->tableFields[$tableField]) ? $tableField : null;
+				$tableField                 = $it[$key]->table->getColumnAlias($field);
+				$it[$key]->fields->{$field} = isset($it[$key]->tableFields[$tableField]) ? $tableField : null;
 			}
 
 			// Disallow ordering according to component.
