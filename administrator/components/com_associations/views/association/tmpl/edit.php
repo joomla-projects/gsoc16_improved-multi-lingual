@@ -15,78 +15,13 @@ JHtml::_('formbehavior.chosen', 'select');
 
 JHtml::_('script', 'com_associations/sidebyside.js', false, true);
 
-if (JFactory::getLanguage()->isRtl()) {
-	$this->app->getDocument()->addStyleDeclaration('
-
-		.sidebyside .outer-panel {
-			float: right;
-			width: 50%;
-		}
-		.sidebyside #right-panel .inner-panel {
-			border-right: 1px solid #999999 !important;
-		}
-		.sidebyside #left-panel .inner-panel {
-			padding-left: 10px;
-		}
-		.sidebyside #right-panel .inner-panel {
-			padding-right: 10px;
-		}
-		.sidebyside .full-width {
-			float: none !important;
-			width: 100% !important;
-		}
-		.sidebyside .full-width .inner-panel {
-			padding-left: 0 !important;
-		}
-		
-		#reference-association, #target-association {
-			width: 100%;
-			height: 1500px;
-			border: 0 !important;
-		}
-
-		.target-text {
-			float: right;
-			width: 30%;
-		}
-	');
+if (JFactory::getLanguage()->isRtl())
+{
+	JHtml::_('stylesheet', 'com_associations/associations-rtl.css', array(), true);
 }
 else
 {
-	$this->app->getDocument()->addStyleDeclaration('
-
-		.sidebyside .outer-panel {
-			float: left;
-			width: 50%;
-		}
-		.sidebyside #left-panel .inner-panel {
-			border-right: 1px solid #999999 !important;
-		}
-		.sidebyside #left-panel .inner-panel {
-			padding-right: 10px;
-		}
-		.sidebyside #right-panel .inner-panel {
-			padding-left: 10px;
-		}
-		.sidebyside .full-width {
-			float: none !important;
-			width: 100% !important;
-		}
-		.sidebyside .full-width .inner-panel {
-			padding-left: 0 !important;
-		}
-		
-		#reference-association, #target-association {
-			width: 100%;
-			height: 1500px;
-			border: 0 !important;
-		}
-
-		.target-text {
-			float: left;
-			width: 30%;
-		}
-	');
+	JHtml::_('stylesheet', 'com_associations/associations.css', array(), true);
 }
 
 $input   = $this->app->input;
@@ -96,7 +31,7 @@ $options = array(
 			'id'                => $this->referenceId,
 		);
 ?>
-<button id="toogle-left-panel" class="btn btn-small" 
+<button id="toogle-left-panel" class="btn btn-small"
 		data-show-reference="<?php echo JText::_('COM_ASSOCIATIONS_EDIT_SHOW_REFERENCE'); ?>"
 		data-hide-reference="<?php echo JText::_('COM_ASSOCIATIONS_EDIT_HIDE_REFERENCE'); ?>"><?php echo JText::_('COM_ASSOCIATIONS_EDIT_HIDE_REFERENCE'); ?>
 </button>
