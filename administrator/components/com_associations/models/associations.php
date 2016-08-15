@@ -29,7 +29,7 @@ class AssociationsModelAssociations extends JModelList
 		if (empty($config['filter_fields']))
 		{
 			$config['filter_fields'] = array(
-				'id', 'a.id',
+				'id',
 				'title',
 				'ordering',
 				'itemtype',
@@ -37,7 +37,7 @@ class AssociationsModelAssociations extends JModelList
 				'association',
 				'menutype', 'menutype_title',
 				'level',
-				'published',
+				'state',
 				'category_id', 'category_title',
 				'access', 'access_level',
 			);
@@ -87,7 +87,7 @@ class AssociationsModelAssociations extends JModelList
 		$this->setState('language', $this->getUserStateFromRequest($this->context . '.language', 'language', '', 'string'));
 
 		$this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
-		$this->setState('filter.published', $this->getUserStateFromRequest($this->context . '.filter.published', 'filter_published', '', 'cmd'));
+		$this->setState('filter.state', $this->getUserStateFromRequest($this->context . '.filter.state', 'filter_state', '', 'cmd'));
 		$this->setState('filter.category_id', $this->getUserStateFromRequest($this->context . '.filter.category_id', 'filter_category_id', '', 'cmd'));
 		$this->setState('filter.menutype', $this->getUserStateFromRequest($this->context . '.filter.menutype', 'filter_menutype', '', 'string'));
 		$this->setState('filter.access', $this->getUserStateFromRequest($this->context . '.filter.access', 'filter_access', '', 'string'));
@@ -128,7 +128,7 @@ class AssociationsModelAssociations extends JModelList
 		$id .= ':' . $this->getState('itemtype');
 		$id .= ':' . $this->getState('language');
 		$id .= ':' . $this->getState('filter.search');
-		$id .= ':' . $this->getState('filter.published');
+		$id .= ':' . $this->getState('filter.state');
 		$id .= ':' . $this->getState('filter.category_id');
 		$id .= ':' . $this->getState('filter.menutype');
 		$id .= ':' . $this->getState('filter.access');
@@ -183,9 +183,9 @@ class AssociationsModelAssociations extends JModelList
 		);
 
 		// Select author for ACL checks.
-		if (!is_null($itemType->fields->created_by))
+		if (!is_null($itemType->fields->created_user_id))
 		{
-			$query->select($db->quoteName('a.' . $itemType->fields->created_by));
+			$query->select($db->quoteName('a.' . $itemType->fields->created_user_id));
 		}
 
 		// Select checked out data for check in checkins.
@@ -208,9 +208,9 @@ class AssociationsModelAssociations extends JModelList
 		}
 
 		// If component item type supports state, select the published state also.
-		if (!is_null($itemType->fields->published))
+		if (!is_null($itemType->fields->state))
 		{
-			$query->select($db->quoteName('a.' . $itemType->fields->published, 'published'));
+			$query->select($db->quoteName('a.' . $itemType->fields->state, 'state'));
 		}
 
 		// If component item type supports level, select the level also.
@@ -281,16 +281,16 @@ class AssociationsModelAssociations extends JModelList
 			$query->where($db->quoteName('a.' . $itemType->fields->language) . ' = ' . $db->quote($language));
 		}
 
-		// Filter by published state.
-		$published = $this->getState('filter.published');
+		// Filter by item state.
+		$state = $this->getState('filter.state');
 
-		if (is_numeric($published))
+		if (is_numeric($state))
 		{
-			$query->where($db->quoteName('a.' . $itemType->fields->published) . ' = ' . (int) $published);
+			$query->where($db->quoteName('a.' . $itemType->fields->state) . ' = ' . (int) $state);
 		}
-		elseif ($published === '')
+		elseif ($state === '')
 		{
-			$query->where($db->quoteName('a.' . $itemType->fields->published) . ' IN (0, 1)');
+			$query->where($db->quoteName('a.' . $itemType->fields->state) . ' IN (0, 1)');
 		}
 
 		// Filter on the category.
