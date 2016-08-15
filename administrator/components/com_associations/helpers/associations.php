@@ -117,29 +117,30 @@ class AssociationsHelper extends JHelperContent
 			}
 			$it[$key]->dbtable = $it[$key]->table->get('_tbl');
 
-			// Get the table fields.
+			// Get the database item type table fields.
 			$it[$key]->tableFields = $it[$key]->table->getFields();
+			$it[$key]->fields      = new Registry;
+			$fields                = array(
+				'id',
+				'title',
+				'alias',
+				'ordering',
+				'menutype',
+				'level',
+				'catid',
+				'language',
+				'access',
+				'state',
+				'created_user_id',
+				'checked_out',
+				'checked_out_time',
+			);
 
-			// Component fields
-			// @todo This need should be checked hardcoding.
-			$it[$key]->fields                   = new Registry;
-			$it[$key]->fields->id               = isset($it[$key]->tableFields['id']) ? 'id' : null;
-			$it[$key]->fields->title            = isset($it[$key]->tableFields['name']) ? 'name' : null;
-			$it[$key]->fields->title            = isset($it[$key]->tableFields['title']) ? 'title' : $it[$key]->fields->title;
-			$it[$key]->fields->alias            = isset($it[$key]->tableFields['alias']) ? 'alias' : null;
-			$it[$key]->fields->ordering         = isset($it[$key]->tableFields['ordering']) ? 'ordering' : null;
-			$it[$key]->fields->ordering         = isset($it[$key]->tableFields['lft']) ? 'lft' : $it[$key]->fields->ordering;
-			$it[$key]->fields->menutype         = isset($it[$key]->tableFields['menutype']) ? 'menutype' : null;
-			$it[$key]->fields->level            = isset($it[$key]->tableFields['level']) ? 'level' : null;
-			$it[$key]->fields->catid            = isset($it[$key]->tableFields['catid']) ? 'catid' : null;
-			$it[$key]->fields->language         = isset($it[$key]->tableFields['language']) ? 'language' : null;
-			$it[$key]->fields->access           = isset($it[$key]->tableFields['access']) ? 'access' : null;
-			$it[$key]->fields->state            = isset($it[$key]->tableFields['published']) ? 'published' : null;
-			$it[$key]->fields->state            = isset($it[$key]->tableFields['state']) ? 'state' : $it[$key]->fields->state;
-			$it[$key]->fields->created_user_id  = isset($it[$key]->tableFields['created_by']) ? 'created_by' : null;
-			$it[$key]->fields->created_user_id  = isset($it[$key]->tableFields['created_user_id']) ? 'created_user_id' : $it[$key]->fields->created_user_id;
-			$it[$key]->fields->checked_out      = isset($it[$key]->tableFields['checked_out']) ? 'checked_out' : null;
-			$it[$key]->fields->checked_out_time = isset($it[$key]->tableFields['checked_out_time']) ? 'checked_out_time' : null;
+			foreach ($fields as $field)
+			{
+				$tableField                 = $it[$key]->table->getColumnAlias($field);
+				$it[$key]->fields->{$field} = isset($it[$key]->tableFields[$tableField]) ? $tableField : null;
+			}
 
 			// Disallow ordering according to component.
 			$it[$key]->excludeOrdering = array();
