@@ -23,7 +23,11 @@ class NewsfeedsTableNewsfeed extends JTable
 	 * @since  __DEPLOY_VERSION__
 	 */
 	protected $_columnAlias = array(
-		'title' => 'name',
+		'title'            => 'name',
+		'created_time'     => 'created',
+		'created_user_id'  => 'created_by',
+		'modified_time'    => 'modified',
+		'modified_user_id' => 'modified_by',
 	);
 
 	/**
