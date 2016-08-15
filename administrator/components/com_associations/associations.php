@@ -12,7 +12,7 @@ JHtml::_('behavior.tabstate');
 
 if (!JFactory::getUser()->authorise('core.manage', 'com_associations'))
 {
-	throw new JControllerExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
+	throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 }
 
 JLoader::register('AssociationsHelper', __DIR__ . '/helpers/associations.php');
@@ -34,7 +34,7 @@ if ($itemKey = JFactory::getApplication()->input->get('itemtype', '', 'string'))
 
 	if (!JFactory::getUser()->authorise('core.manage', $itemType->realcomponent))
 	{
-		throw new Exception(JText::_('JERROR_ALERTNOAUTHOR'), 403);
+		throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 	}
 }
 
