@@ -10,18 +10,21 @@
 	<version>__DEPLOY_VERSION__</version>
 	<description>COM_ASSOCIATIONS_XML_DESCRIPTION</description>
 	<administration>
-		<menu>COM_ASSOCIATIONS</menu>
+		<menu img="class:associations">COM_ASSOCIATIONS</menu>
 		<files folder="admin">
 			<filename>access.xml</filename>
 			<filename>config.xml</filename>
 			<filename>associations.php</filename>
 			<filename>controller.php</filename>
 			<folder>controllers</folder>
-			<folder>language</folder>
 			<folder>helpers</folder>
 			<folder>layouts</folder>
 			<folder>models</folder>
 			<folder>views</folder>
 		</files>
+		<languages folder="admin">
+			<language tag="en-GB">language/en-GB.com_associations.ini</language>
+			<language tag="en-GB">language/en-GB.com_associations.sys.ini</language>
+		</languages>
 	</administration>
 </extension>
