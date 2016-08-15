@@ -130,7 +130,7 @@ class AssociationsHelper extends JHelperContent
 				'catid',
 				'language',
 				'access',
-				'published',
+				'state',
 				'created_user_id',
 				'checked_out',
 				'checked_out_time',
