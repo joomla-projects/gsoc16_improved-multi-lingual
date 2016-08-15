@@ -519,8 +519,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Get a existing asset key using the item parents.
 	 *
-	 * @param   JRegistry       $itemType  Item type properties.
-	 * @param   integer|object  $item      Item id or Item db row object.
+	 * @param   JRegistry      $itemType  Item type properties.
+	 * @param   JTable|object  $item      JTable Item or Item db row object.
 	 *
 	 * @return  string  The asset key.
 	 *
@@ -528,17 +528,14 @@ class AssociationsHelper extends JHelperContent
 	 */
 	protected static function getAssetKey(JRegistry $itemType, $item = null)
 	{
-		// Load the item from table (if needed) and set the db fields names.
-		if (is_int($item))
+		// If item from JTable set the db fields names.
+		if (!$item instanceof stdClass)
 		{
 			$idField       = $itemType->fields->id;
 			$menutypeField = $itemType->fields->menutype;
 			$catidField    = $itemType->fields->catid;
-			$itemId = $item;
-			$item  = clone $itemType->table;
-			$item->load($itemId);
 		}
-		// Set the db fields names (use alias from the model get list query).
+		// Else use the alias from the model get list query.
 		else
 		{
 			$idField       = 'id';
@@ -585,8 +582,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to edit items.
 	 *
-	 * @param   JRegistry       $itemType  Item type properties.
-	 * @param   integer|object  $item      Item id or Item db row object.
+	 * @param   JRegistry      $itemType  Item type properties.
+	 * @param   JTable|object  $item      JTable Item or Item db row object.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
@@ -602,19 +599,8 @@ class AssociationsHelper extends JHelperContent
 			return $user->authorise('core.edit', $itemType->realcomponent);
 		}
 
-		// Load the item from table (if needed) and set the db fields names.
-		if (is_int($item))
-		{
-			$createdUserIdField = $itemType->fields->created_user_id;
-			$itemId = $item;
-			$item  = clone $itemType->table;
-			$item->load($itemId);
-		}
-		// Set the db fields names (use alias from the model get list query).
-		else
-		{
-			$createdUserIdField = 'created_user_id';
-		}
+		// If item from JTable use the db fields names, else use the alias from the models get list query.
+		$createdUserIdField = !$item instanceof stdClass ? $itemType->fields->created_user_id : 'created_user_id';
 
 		// Get the asset key.
 		$assetKey = self::getAssetKey($itemType, $item);
@@ -634,8 +620,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to create items.
 	 *
-	 * @param   JRegistry       $itemType  Item type properties.
-	 * @param   integer|object  $item      Item id or Item db row object.
+	 * @param   JRegistry      $itemType  Item type properties.
+	 * @param   JTable|object  $item      JTable Item or Item db row object.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
@@ -651,14 +637,6 @@ class AssociationsHelper extends JHelperContent
 			return $user->authorise('core.create', $itemType->realcomponent);
 		}
 
-		// Load the item from table (if needed).
-		if (is_int($item))
-		{
-			$itemId = $item;
-			$item  = clone $itemType->table;
-			$item->load($itemId);
-		}
-
 		// Check core.create permissions.
 		return $user->authorise('core.create', self::getAssetKey($itemType, $item));
 	}
@@ -666,8 +644,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to perform check actions (checkin/checkout) on a item.
 	 *
-	 * @param   JRegistry       $itemType  Item type properties.
-	 * @param   integer|object  $item      Item id or Item db row object.
+	 * @param   JRegistry      $itemType  Item type properties.
+	 * @param   JTable|object  $item      JTable Item or Item db row object.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
@@ -681,19 +659,8 @@ class AssociationsHelper extends JHelperContent
 			return false;
 		}
 
-		// Load the item from table (if needed) and set the db fields names.
-		if (is_int($item))
-		{
-			$checkedOutField = $itemType->fields->checked_out;
-			$itemId          = $item;
-			$item            = clone $itemType->table;
-			$item->load($itemId);
-		}
-		// Set the db fields names (use alias from the model get list query).
-		else
-		{
-			$checkedOutField = 'checked_out';
-		}
+		// If item from JTable use the db fields names, else use the alias from the models get list query.
+		$checkedOutField = !$item instanceof stdClass ? $itemType->fields->checked_out : 'checked_out';
 
 		// All other cases. Check if user checked out this item.
 		return in_array($item->$checkedOutField, array(JFactory::getUser()->id, 0));
