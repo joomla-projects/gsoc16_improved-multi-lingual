@@ -183,9 +183,9 @@ class AssociationsModelAssociations extends JModelList
 		);
 
 		// Select author for ACL checks.
-		if (!is_null($itemType->fields->created_by))
+		if (!is_null($itemType->fields->created_user_id))
 		{
-			$query->select($db->quoteName('a.' . $itemType->fields->created_by));
+			$query->select($db->quoteName('a.' . $itemType->fields->created_user_id));
 		}
 
 		// Select checked out data for check in checkins.
