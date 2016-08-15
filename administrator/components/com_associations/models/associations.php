@@ -207,7 +207,7 @@ class AssociationsModelAssociations extends JModelList
 			$query->select($db->quoteName('a.' . $itemType->fields->ordering, 'ordering'));
 		}
 
-		// If component item type supports state, select the published state also.
+		// If component item type supports state, select the item state also.
 		if (!is_null($itemType->fields->state))
 		{
 			$query->select($db->quoteName('a.' . $itemType->fields->state, 'state'));
