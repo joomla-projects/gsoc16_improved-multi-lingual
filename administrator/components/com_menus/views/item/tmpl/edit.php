@@ -127,7 +127,6 @@ $tmpl = $input->get('tmpl', '', 'cmd') === 'component' ? '&tmpl=component' : '';
 					'access',
 					'language',
 					'note',
-
 				);
 
 				if ($this->item->type != 'component')

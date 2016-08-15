@@ -38,7 +38,7 @@ class AssociationsControllerAssociations extends JControllerAdmin
 	 *
 	 * @since   __DEPLOY_VERSION__
 	 */
-	public function getModel($name = 'Associations', $prefix='AssociationsModel', $config = array('ignore_request' => true))
+	public function getModel($name = 'Associations', $prefix = 'AssociationsModel', $config = array('ignore_request' => true))
 	{
 		return parent::getModel($name, $prefix, $config);
 	}
@@ -99,7 +99,7 @@ class AssociationsControllerAssociations extends JControllerAdmin
 	{
 		$model = $this->getModel('associations');
 		$model->purge();
-		$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
+		$this->setRedirect(JRoute::_('index.php?option=' . $this->option . '&view=' . $this->view_list, false));
 	}
 
 	/**
@@ -113,6 +113,6 @@ class AssociationsControllerAssociations extends JControllerAdmin
 	{
 		$model = $this->getModel('associations');
 		$model->clean();
-		$this->setRedirect(JRoute::_('index.php?option=com_associations&view=associations', false));
+		$this->setRedirect(JRoute::_('index.php?option=' . $this->option . '&view=' . $this->view_list, false));
 	}
 }

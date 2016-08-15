@@ -232,7 +232,7 @@ class JTableMenu extends JTableNested
 					array(
 					'menutype' => $this->menutype,
 					'client_id' => (int) $this->client_id,
-					'home' => '1'
+					'home' => '1',
 					)
 				)
 				&& ($table->language != $this->language))
@@ -281,6 +281,6 @@ class JTableMenu extends JTableNested
 
 		// Use new path for partial rebuild of table
 		// Rebuild will return positive integer on success, false on failure
-		return ($this->rebuild($this->{$this->_tbl_key}, $this->lft, $this->level, $newPath) > 0);
+		return $this->rebuild($this->{$this->_tbl_key}, $this->lft, $this->level, $newPath) > 0;
 	}
 }

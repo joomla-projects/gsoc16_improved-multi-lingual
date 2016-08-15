@@ -251,8 +251,8 @@ class JoomlaInstallerScript
 			array('library', 'fof', '', 0),
 			array('library', 'phpass', '', 0),
 
-			// Modules site
-			// Site
+			// Modules
+			// - Site
 			array('module', 'mod_articles_archive', '', 0),
 			array('module', 'mod_articles_latest', '', 0),
 			array('module', 'mod_articles_popular', '', 0),
@@ -278,7 +278,7 @@ class JoomlaInstallerScript
 			array('module', 'mod_tags_popular', '', 0),
 			array('module', 'mod_tags_similar', '', 0),
 
-			// Administrator
+			// - Administrator
 			array('module', 'mod_custom', '', 1),
 			array('module', 'mod_feed', '', 1),
 			array('module', 'mod_latest', '', 1),
@@ -294,7 +294,7 @@ class JoomlaInstallerScript
 			array('module', 'mod_toolbar', '', 1),
 			array('module', 'mod_multilangstatus', '', 1),
 
-			// Plug-ins
+			// Plugins
 			array('plugin', 'gmail', 'authentication', 0),
 			array('plugin', 'joomla', 'authentication', 0),
 			array('plugin', 'ldap', 'authentication', 0),
@@ -1427,6 +1427,7 @@ class JoomlaInstallerScript
 			'/administrator/templates/isis/js/jquery.js',
 			'/administrator/templates/isis/js/bootstrap.min.js',
 			'/media/system/js/permissions.min.js',
+			'/libraries/platform.php',
 		);
 
 		// TODO There is an issue while deleting folders using the ftp mode
@@ -1591,7 +1592,8 @@ class JoomlaInstallerScript
 			'com_tags',
 			'com_contenthistory',
 			'com_ajax',
-			'com_postinstall'
+			'com_postinstall',
+			'com_associations',
 		);
 
 		foreach ($newComponents as $component)

@@ -379,22 +379,38 @@ class AssociationsHelper extends JHelperContent
 			// Get the associated items.
 			$query = $db->getQuery(true)
 				->select($db->quoteName('a.' . $itemType->fields->id, 'id'))
-				->select($db->quoteName('a.' . $itemType->fields->language, 'language'))
 				->select($db->quoteName('a.' . $itemType->fields->title, 'title'))
+				->select($db->quoteName('a.' . $itemType->fields->language, 'language'))
 				->from($db->quoteName($itemType->dbtable, 'a'))
 				->where($db->quoteName('a.' . $itemType->fields->id) . ' IN (' . implode(', ', array_values($associations)) . ')');
 
+			// Prepare the group by clause.
+			$groupby = array(
+				'a.' . $itemType->fields->id,
+				'a.' . $itemType->fields->title,
+				'a.' . $itemType->fields->language,
+			);
+
+			// Join over the category.
 			if (!is_null($itemType->fields->catid))
 			{
 				$query->select($db->quoteName('c.title', 'category_title'))
 					->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON ' . $db->qn('c.id') . ' = ' . $db->qn('a.' . $itemType->fields->catid));
+				
+				$groupby[] = 'c.title';
 			}
 
+			// Join over the menu type.
 			if (!is_null($itemType->fields->menutype))
 			{
 				$query->select($db->quoteName('mt.title', 'menu_title'))
 					->join('LEFT', $db->quoteName('#__menu_types', 'mt') . ' ON ' . $db->qn('mt.menutype') . ' = ' . $db->qn('a.' . $itemType->fields->menutype));
+				
+				$groupby[] = 'mt.title';
 			}
+
+			// Add the group by clause
+			$query->group($db->quoteName($groupby));
 
 			$db->setQuery($query);
 

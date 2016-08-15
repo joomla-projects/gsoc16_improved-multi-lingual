@@ -12,7 +12,7 @@ JHtml::_('behavior.tabstate');
 
 if (!JFactory::getUser()->authorise('core.manage', 'com_associations'))
 {
-	throw new Exception(JText::_('JERROR_ALERTNOAUTHOR'), 403);
+	throw new JControllerExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
 }
 
 JLoader::register('AssociationsHelper', __DIR__ . '/helpers/associations.php');
