@@ -281,7 +281,7 @@ class AssociationsModelAssociations extends JModelList
 			$query->where($db->quoteName('a.' . $itemType->fields->language) . ' = ' . $db->quote($language));
 		}
 
-		// Filter by state state.
+		// Filter by item state.
 		$state = $this->getState('filter.state');
 
 		if (is_numeric($state))
