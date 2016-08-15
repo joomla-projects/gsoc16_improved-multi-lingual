@@ -134,10 +134,10 @@ class AssociationsHelper extends JHelperContent
 			$it[$key]->fields->catid            = isset($it[$key]->tableFields['catid']) ? 'catid' : null;
 			$it[$key]->fields->language         = isset($it[$key]->tableFields['language']) ? 'language' : null;
 			$it[$key]->fields->access           = isset($it[$key]->tableFields['access']) ? 'access' : null;
-			$it[$key]->fields->published        = isset($it[$key]->tableFields['state']) ? 'state' : null;
-			$it[$key]->fields->published        = isset($it[$key]->tableFields['published']) ? 'published' : $it[$key]->fields->published;
-			$it[$key]->fields->created_by       = isset($it[$key]->tableFields['created_user_id']) ? 'created_user_id' : null;
-			$it[$key]->fields->created_by       = isset($it[$key]->tableFields['created_by']) ? 'created_by' : $it[$key]->fields->created_by;
+			$it[$key]->fields->state            = isset($it[$key]->tableFields['published']) ? 'published' : null;
+			$it[$key]->fields->state            = isset($it[$key]->tableFields['state']) ? 'state' : $it[$key]->fields->state;
+			$it[$key]->fields->created_user_id  = isset($it[$key]->tableFields['created_by']) ? 'created_by' : null;
+			$it[$key]->fields->created_user_id  = isset($it[$key]->tableFields['created_user_id']) ? 'created_user_id' : $it[$key]->fields->created_user_id;
 			$it[$key]->fields->checked_out      = isset($it[$key]->tableFields['checked_out']) ? 'checked_out' : null;
 			$it[$key]->fields->checked_out_time = isset($it[$key]->tableFields['checked_out_time']) ? 'checked_out_time' : null;
 
@@ -589,9 +589,9 @@ class AssociationsHelper extends JHelperContent
 		// Check if can edit own.
 		$canEditOwn = false;
 
-		if (!is_null($itemType->fields->created_by))
+		if (!is_null($itemType->fields->created_user_id))
 		{
-			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$itemType->fields->created_by} == $user->id;
+			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$itemType->fields->created_user_id} == $user->id;
 		}
 
 		// Check also core.edit permissions.
