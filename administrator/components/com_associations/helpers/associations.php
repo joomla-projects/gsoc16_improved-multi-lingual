@@ -131,7 +131,7 @@ class AssociationsHelper extends JHelperContent
 				'language',
 				'access',
 				'published',
-				'created_time',
+				'created_user_id',
 				'checked_out',
 				'checked_out_time',
 			);
