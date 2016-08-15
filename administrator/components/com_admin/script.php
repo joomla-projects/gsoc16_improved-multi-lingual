@@ -1608,6 +1608,12 @@ class JoomlaInstallerScript
 			$asset->name = $component;
 			$asset->parent_id = 1;
 			$asset->rules = '{}';
+			
+			if ($component === 'com_associations')
+			{
+				$asset->rules = '{"core.admin":{"7":1},"core.manage":{"6":1}}';
+			}
+
 			$asset->title = $component;
 			$asset->setLocation(1, 'last-child');
 
