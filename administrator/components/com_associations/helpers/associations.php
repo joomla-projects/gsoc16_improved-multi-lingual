@@ -519,8 +519,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Get a existing asset key using the item parents.
 	 *
-	 * @param   JRegistry  $itemType  Item type properties.
-	 * @param   object     $item      JTable item.
+	 * @param   JRegistry       $itemType  Item type properties.
+	 * @param   integer|object  $item      Item id or Item db row object.
 	 *
 	 * @return  string  The asset key.
 	 *
@@ -528,9 +528,27 @@ class AssociationsHelper extends JHelperContent
 	 */
 	protected static function getAssetKey(JRegistry $itemType, $item = null)
 	{
+		// Load the item from table (if needed) and set the db fields names.
+		if (is_int($item))
+		{
+			$idField       = $itemType->fields->id;
+			$menutypeField = $itemType->fields->menutype;
+			$catidField    = $itemType->fields->catid;
+			$itemId = $item;
+			$item  = clone $itemType->table;
+			$item->load($itemId);
+		}
+		// Set the db fields names (use alias from the model get list query).
+		else
+		{
+			$idField       = 'id';
+			$menutypeField = 'menutype';
+			$catidField    = 'catid';
+		}
+
 		// Get the item asset.
 		$asset = JTable::getInstance('Asset');
-		$asset->loadByName($itemType->assetKey . '.' . $item->{$itemType->fields->id});
+		$asset->loadByName($itemType->assetKey . '.' . $item->{$idField});
 
 		// If the item asset does not exist (ex: com_menus, com_contact, com_newsfeeds).
 		if (is_null($asset->id))
@@ -542,7 +560,7 @@ class AssociationsHelper extends JHelperContent
 				if (!isset($item->menutypeid))
 				{
 					$table = JTable::getInstance('MenuType');
-					$table->load(array('menutype' => $item->{$itemType->fields->menutype}));
+					$table->load(array('menutype' => $item->{$menutypeField}));
 					$item->menutypeid = $table->id;
 				}
 
@@ -551,7 +569,7 @@ class AssociationsHelper extends JHelperContent
 			// For all other components, if item asset does not exist, fallback to category asset (if component supports).
 			elseif (!is_null($itemType->fields->catid))
 			{
-				$asset->loadByName($itemType->realcomponent . '.category.' . $item->{$itemType->fields->catid});
+				$asset->loadByName($itemType->realcomponent . '.category.' . $item->{$catidField});
 			}
 		}
 
@@ -567,8 +585,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to edit items.
 	 *
-	 * @param   JRegistry  $itemType  Item type properties.
-	 * @param   object     $item      JTable item.
+	 * @param   JRegistry       $itemType  Item type properties.
+	 * @param   integer|object  $item      Item id or Item db row object.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
@@ -584,6 +602,20 @@ class AssociationsHelper extends JHelperContent
 			return $user->authorise('core.edit', $itemType->realcomponent);
 		}
 
+		// Load the item from table (if needed) and set the db fields names.
+		if (is_int($item))
+		{
+			$createdUserIdField = $itemType->fields->created_user_id;
+			$itemId = $item;
+			$item  = clone $itemType->table;
+			$item->load($itemId);
+		}
+		// Set the db fields names (use alias from the model get list query).
+		else
+		{
+			$createdUserIdField = 'created_user_id';
+		}
+
 		// Get the asset key.
 		$assetKey = self::getAssetKey($itemType, $item);
 
@@ -592,7 +624,7 @@ class AssociationsHelper extends JHelperContent
 
 		if (!is_null($itemType->fields->created_user_id))
 		{
-			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$itemType->fields->created_user_id} == $user->id;
+			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$createdUserIdField} == $user->id;
 		}
 
 		// Check also core.edit permissions.
@@ -602,8 +634,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to create items.
 	 *
-	 * @param   JRegistry  $itemType  Item type properties.
-	 * @param   object     $item      JTable item.
+	 * @param   JRegistry       $itemType  Item type properties.
+	 * @param   integer|object  $item      Item id or Item db row object.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
@@ -619,6 +651,13 @@ class AssociationsHelper extends JHelperContent
 			return $user->authorise('core.create', $itemType->realcomponent);
 		}
 
+		// Load the item from table (if needed).
+		if (is_int($item))
+		{
+			$itemId = $item;
+			$item  = clone $itemType->table;
+			$item->load($itemId);
+		}
 
 		// Check core.create permissions.
 		return $user->authorise('core.create', self::getAssetKey($itemType, $item));
@@ -627,8 +666,8 @@ class AssociationsHelper extends JHelperContent
 	/**
 	 * Check if user is allowed to perform check actions (checkin/checkout) on a item.
 	 *
-	 * @param   JRegistry  $itemType  Item type properties.
-	 * @param   object     $item      JTable item.
+	 * @param   JRegistry       $itemType  Item type properties.
+	 * @param   integer|object  $item      Item id or Item db row object.
 	 *
 	 * @return  boolean  True on allowed.
 	 *
@@ -642,7 +681,21 @@ class AssociationsHelper extends JHelperContent
 			return false;
 		}
 
+		// Load the item from table (if needed) and set the db fields names.
+		if (is_int($item))
+		{
+			$checkedOutField = $itemType->fields->checked_out;
+			$itemId          = $item;
+			$item            = clone $itemType->table;
+			$item->load($itemId);
+		}
+		// Set the db fields names (use alias from the model get list query).
+		else
+		{
+			$checkedOutField = 'checked_out';
+		}
+
 		// All other cases. Check if user checked out this item.
-		return in_array($item->{$itemType->fields->checked_out}, array(JFactory::getUser()->id, 0));
+		return in_array($item->$checkedOutField, array(JFactory::getUser()->id, 0));
 	}
 }
