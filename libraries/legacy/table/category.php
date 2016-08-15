@@ -26,7 +26,6 @@ class JTableCategory extends JTableNested
 	 */
 	protected $_columnAlias = array(
 		'ordering'   => 'lft',
-		'created_by' => 'created_user_id',
 	);
 
 	/**
