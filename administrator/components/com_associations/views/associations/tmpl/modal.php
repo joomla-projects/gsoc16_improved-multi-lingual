@@ -65,9 +65,9 @@ $app->getDocument()->addScriptDeclaration(
 		<table class="table table-striped" id="associationsList">
 			<thead>
 				<tr>
-					<?php if (!is_null($this->itemType->fields->published)) : ?>
+					<?php if (!is_null($this->itemType->fields->state)) : ?>
 						<th width="1%" class="center nowrap">
-							<?php echo JHtml::_('searchtools.sort', 'JSTATUS', 'published', $listDirn, $listOrder); $colSpan++; ?>
+							<?php echo JHtml::_('searchtools.sort', 'JSTATUS', 'state', $listDirn, $listOrder); $colSpan++; ?>
 						</th>
 					<?php endif; ?>
 					<th class="nowrap">
@@ -90,7 +90,7 @@ $app->getDocument()->addScriptDeclaration(
 						</th>
 					<?php endif; ?>
 					<th width="1%" class="nowrap hidden-phone">
-						<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
+						<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_ID', 'id', $listDirn, $listOrder); ?>
 					</th>
 				</tr>
 			</thead>
@@ -105,9 +105,9 @@ $app->getDocument()->addScriptDeclaration(
 			<?php foreach ($this->items as $i => $item) :
 				?>
 				<tr class="row<?php echo $i % 2; ?>">
-					<?php if (!is_null($this->itemType->fields->published)) : ?>
+					<?php if (!is_null($this->itemType->fields->state)) : ?>
 						<td class="center">
-							<span class="<?php echo $iconStates[$this->escape($item->published)]; ?>"></span>
+							<span class="<?php echo $iconStates[$this->escape($item->state)]; ?>"></span>
 						</td>
 					<?php endif; ?>
 					<td class="nowrap has-context">
