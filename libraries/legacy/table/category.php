@@ -25,6 +25,7 @@ class JTableCategory extends JTableNested
 	 * @since  __DEPLOY_VERSION__
 	 */
 	protected $_columnAlias = array(
+		'state'    => 'published',
 		'ordering' => 'lft',
 	);
 
