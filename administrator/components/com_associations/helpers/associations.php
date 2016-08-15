@@ -574,9 +574,9 @@ class AssociationsHelper extends JHelperContent
 		// Check if can edit own.
 		$canEditOwn = false;
 
-		if (!is_null($itemType->fields->created_by))
+		if (!is_null($itemType->fields->created_user_id))
 		{
-			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$itemType->fields->created_by} == $user->id;
+			$canEditOwn = $user->authorise('core.edit.own', $assetKey) && $item->{$itemType->fields->created_user_id} == $user->id;
 		}
 
 		// Check also core.edit permissions.
