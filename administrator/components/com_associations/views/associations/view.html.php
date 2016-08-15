@@ -87,10 +87,10 @@ class AssociationsViewAssociations extends JViewLegacy
 			unset($this->activeFilters['language']);
 
 			// Remove filters options depending on selected itemtype.
-			if (is_null($this->itemType) || is_null($this->itemType->fields->published))
+			if (is_null($this->itemType) || is_null($this->itemType->fields->state))
 			{
-				unset($this->activeFilters['published']);
-				$this->filterForm->removeField('published', 'filter');
+				unset($this->activeFilters['state']);
+				$this->filterForm->removeField('state', 'filter');
 			}
 			if (is_null($this->itemType) || is_null($this->itemType->fields->catid))
 			{
