@@ -27,7 +27,7 @@
 			hint="JSEARCH_FILTER"
 		/>
 		<field
-			name="published"
+			name="state"
 			type="status"
 			label="JOPTION_FILTER_PUBLISHED"
 			description="JOPTION_FILTER_PUBLISHED_DESC"
@@ -88,8 +88,8 @@
 			<option value="">JGLOBAL_SORT_BY</option>
 			<option value="ordering ASC">JGRID_HEADING_ORDERING_ASC</option>
 			<option value="ordering DESC">JGRID_HEADING_ORDERING_DESC</option>
-			<option value="published ASC">JSTATUS_ASC</option>
-			<option value="published DESC">JSTATUS_DESC</option>
+			<option value="state ASC">JSTATUS_ASC</option>
+			<option value="state DESC">JSTATUS_DESC</option>
 			<option value="title ASC">JGLOBAL_TITLE_ASC</option>
 			<option value="title DESC">JGLOBAL_TITLE_DESC</option>
 			<option value="category_title ASC">JCATEGORY_ASC</option>
@@ -100,8 +100,8 @@
 			<option value="menutype_title DESC">COM_ASSOCIATIONS_HEADING_MENUTYPE_DESC</option>
 			<option value="access_level ASC">JGRID_HEADING_ACCESS_ASC</option>
 			<option value="access_level DESC">JGRID_HEADING_ACCESS_DESC</option>
-			<option value="a.id ASC">JGRID_HEADING_ID_ASC</option>
-			<option value="a.id DESC">JGRID_HEADING_ID_DESC</option>
+			<option value="id ASC">JGRID_HEADING_ID_ASC</option>
+			<option value="id DESC">JGRID_HEADING_ID_DESC</option>
 		</field>
 
 		<field
