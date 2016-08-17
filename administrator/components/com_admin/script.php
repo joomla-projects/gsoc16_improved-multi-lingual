@@ -1614,16 +1614,18 @@ class JoomlaInstallerScript
 
 			if ($component === 'com_associations')
 			{
-     				$assetRules = JAccess::getAssetRules('com_content');
+				// Clone from com_content
+				$assetRules = JAccess::getAssetRules('com_content');
 				$assetData  = $assetRules->getData();
-				$rules = new JRegistry();
+				$rules = new JRegistry;
 				$rules->loadString($assetData['core.admin']);
 				$core_admin = $rules->__toString();
-				$rules = new JRegistry();
+				$rules = new JRegistry;
 				$rules->loadString($assetData['core.manage']);
-				$core_manage=$rules->__toString();
-     				$asset->rules = '{"core.admin":' . $core_admin . ',' . '"core.manage":' . $core_manage . '}';
+				$core_manage = $rules->__toString();
+				$asset->rules = '{"core.admin":' . $core_admin . ',' . '"core.manage":' . $core_manage . '}';
 			}
+
 			if (!$asset->store())
 			{
 				// Install failed, roll back changes
