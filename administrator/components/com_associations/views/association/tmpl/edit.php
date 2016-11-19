@@ -13,15 +13,15 @@ JHtml::_('behavior.formvalidator');
 JHtml::_('behavior.keepalive');
 JHtml::_('formbehavior.chosen', 'select');
 
-JHtml::_('script', 'com_associations/sidebyside.js', false, true);
-JHtml::_('stylesheet', 'com_associations/sidebyside.css', array(), true);
+JHtml::_('script', 'com_associations/sidebyside.js', array('version' => 'auto', 'relative' => true));
+JHtml::_('stylesheet', 'com_associations/sidebyside.css', array('version' => 'auto', 'relative' => true));
 
 $input   = $this->app->input;
 $options = array(
-			'layout'            => $input->get('layout', '', 'string'),
-			'itemtype'          => $this->itemType->key,
-			'id'                => $this->referenceId,
-		);
+	'layout'   => $input->get('layout', '', 'string'),
+	'itemtype' => $this->itemType->key,
+	'id'       => $this->referenceId,
+);
 ?>
 <button id="toogle-left-panel" class="btn btn-small" 
 		data-show-reference="<?php echo JText::_('COM_ASSOCIATIONS_EDIT_SHOW_REFERENCE'); ?>"
