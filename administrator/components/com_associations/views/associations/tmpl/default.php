@@ -118,7 +118,7 @@ JFactory::getDocument()->addScriptDeclaration('
 					<td class="center">
 						<?php echo JHtml::_('grid.id', $i, $item->id); ?>
 					</td>
-					<?php if (!is_null($this->itemType->fields->state)) : ?>
+					<?php if (isset($this->itemType->fields->state) && !is_null($this->itemType->fields->state)) : ?>
 						<td class="center">
 							<span class="<?php echo $iconStates[$this->escape($item->state)]; ?>"></span>
 						</td>

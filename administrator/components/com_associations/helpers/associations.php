@@ -74,8 +74,9 @@ class AssociationsHelper extends JHelperContent
 			}
 
 			// Check for component item type model and his properties.
-			$componentName = ucfirst(substr($it[$key]->component, 4));
-			$modelsPath    = $it[$key]->adminPath . '/models';
+			$componentName  = ucfirst(substr($it[$key]->component, 4));
+			$modelsPath     = $it[$key]->adminPath . '/models';
+			$helpersPath    = $it[$key]->adminPath . '/helpers';
 
 			// If component item type models path does not exist, item type does not support associations.
 			if (!is_dir($modelsPath))
@@ -89,8 +90,24 @@ class AssociationsHelper extends JHelperContent
 			JLoader::register($componentName . 'Model' . $itemName, $modelsPath . '/' . $it[$key]->item . '.php');
 			$it[$key]->model = JModelLegacy::getInstance($itemName, $componentName . 'Model', array('ignore_request' => true));
 
-			// If component item type model cannot loaded, or associations properties does not exist, item type does not support associations.
-			$it[$key]->associations->support = $it[$key]->model && $it[$key]->model->get('associationsContext');
+			$columnAlias = array();
+
+			// If component item helper cannot loaded, or hasAssociationsSupport is false, item type does not support associations.
+			if (file_exists($helpersPath . '/associations/' . $it[$key]->item . '.php') || $it[$key]->item === 'category')
+			{
+				$helperName = $itemName . 'AssociationsHelper';
+				JLoader::register($helperName, $helpersPath . '/associations/' . $it[$key]->item . '.php');
+
+				if ($it[$key]->item !== 'category')
+				{
+					$helper = new $helperName;
+
+					$it[$key]->associations->support           = $helper->hasAssociationsSupport();
+					$it[$key]->associations->supportCategories = $helper->hasAssociationsCategories();
+
+					$columnAlias = $helper->getColumnTableAlias();
+				}
+			}
 
 			// Get item type alias and asset column key.
 			$it[$key]->assetKey  = $it[$key]->item === 'category' ? $it[$key]->extension . '.category' : $it[$key]->model->get('typeAlias');
@@ -119,54 +136,42 @@ class AssociationsHelper extends JHelperContent
 
 			// Get the database item type table fields.
 			$it[$key]->tableFields = $it[$key]->table->getFields();
-			$it[$key]->fields      = new Registry;
-			$fields                = array(
-				'id',
-				'title',
-				'alias',
-				'ordering',
-				'menutype',
-				'level',
-				'catid',
-				'language',
-				'access',
-				'state',
-				'created_user_id',
-				'checked_out',
-				'checked_out_time',
-			);
-
-			foreach ($fields as $field)
+			
+			if ($it[$key]->item !== 'category' && !empty($columnAlias))
 			{
-				$tableField                 = $it[$key]->table->getColumnAlias($field);
-				$it[$key]->fields->{$field} = isset($it[$key]->tableFields[$tableField]) ? $tableField : null;
+				$it[$key]->fields = new Registry;
+				
+				foreach ($columnAlias as $column => $alias)
+				{
+					$it[$key]->fields->{$column} = $alias;
+				}
 			}
 
 			// Disallow ordering according to component.
 			$it[$key]->excludeOrdering = array();
 
-			if (is_null($it[$key]->fields->catid))
+			if (!isset($it[$key]->fields->catid))
 			{
 				array_push($it[$key]->excludeOrdering, 'category_title');
 			}
-			if (is_null($it[$key]->fields->menutype))
+			if (!isset($it[$key]->fields->menutype))
 			{
 				array_push($it[$key]->excludeOrdering, 'menutype_title');
 			}
-			if (is_null($it[$key]->fields->access))
+			if (!isset($it[$key]->fields->access))
 			{
 				array_push($it[$key]->excludeOrdering, 'access_level');
 			}
-			if (is_null($it[$key]->fields->ordering))
+			if (!isset($it[$key]->fields->ordering))
 			{
 				array_push($it[$key]->excludeOrdering, 'ordering');
 			}
 
-			// Check the default ordering (ordering is the default, is component does not support, fallback to title).
-			$it[$key]->defaultOrdering = is_null($it[$key]->fields->ordering) ? array('title', 'ASC') : array('ordering', 'ASC');
+			// Check the default ordering (ordering is the default. If not supported, fallback to title).
+			$it[$key]->defaultOrdering = !isset($it[$key]->fields->ordering) ? array('title', 'ASC') : array('ordering', 'ASC');
 
-			// If item does not have id, title, alias and language cannot support associations.
-			if (in_array(null, array($it[$key]->fields->id, $it[$key]->fields->title, $it[$key]->fields->alias, $it[$key]->fields->language)))
+			// If item does not have id, title, alias and language, it cannot support associations.
+			if (!isset($it[$key]->fields->id) || !isset($it[$key]->fields->title) || !isset($it[$key]->fields->alias) || !isset($it[$key]->fields->language))
 			{
 				$it[$key]->associations->support = false;
 			}
