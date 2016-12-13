@@ -22,6 +22,10 @@ mysql -u root joomla_ut < "$BASE/tests/unit/schema/mysql.sql"
 psql -c 'create database joomla_ut;' -U postgres
 psql -d joomla_ut -a -f "$BASE/tests/unit/schema/postgresql.sql"
 
+if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
+   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/
+fi
+
 # Set up Apache
 # - ./build/travis/php-apache.sh
 # Enable additional PHP extensions
