@@ -23,9 +23,11 @@ psql -c 'create database joomla_ut;' -U postgres
 psql -d joomla_ut -a -f "$BASE/tests/unit/schema/postgresql.sql"
 
 if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
+   ls -la /home/travis/.phpenv/
+   ls -la /home/travis/.phpenv/versions/
    ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/
-   ls -la $BASE/build/travis/
-   ls -la $BASE/build/travis/phpenv/
+   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/php/
+   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/
 fi
 
 # Set up Apache
