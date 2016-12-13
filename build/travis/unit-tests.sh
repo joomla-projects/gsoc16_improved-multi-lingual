@@ -22,14 +22,6 @@ mysql -u root joomla_ut < "$BASE/tests/unit/schema/mysql.sql"
 psql -c 'create database joomla_ut;' -U postgres
 psql -d joomla_ut -a -f "$BASE/tests/unit/schema/postgresql.sql"
 
-if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
-   ls -la /home/travis/.phpenv/
-   ls -la /home/travis/.phpenv/versions/
-   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/
-   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/php/
-   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/
-fi
-
 # Set up Apache
 # - ./build/travis/php-apache.sh
 # Enable additional PHP extensions
@@ -41,3 +33,11 @@ if [[ $INSTALL_APC == "yes" && $TRAVIS_PHP_VERSION = 5.[56] ]]; then printf "\n"
 if [[ $INSTALL_APC == "yes" && $TRAVIS_PHP_VERSION = 7.* ]]; then phpenv config-add "$BASE/build/travis/phpenv/apcu-$TRAVIS_PHP_VERSION.ini"; fi
 if [[ $INSTALL_REDIS == "yes" && $TRAVIS_PHP_VERSION != hhvm ]]; then phpenv config-add "$BASE/build/travis/phpenv/redis.ini"; fi
 if [[ $INSTALL_REDIS == "yes" && $TRAVIS_PHP_VERSION = hhvm ]]; then cat "$BASE/build/travis/phpenv/redis.ini" >> /etc/hhvm/php.ini; fi
+
+if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
+   echo "PHP $TRAVIS_PHP_VERSION Configuration";
+   cat /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/php.ini
+else
+   echo "PHP $TRAVIS_PHP_VERSION Configuration";
+   cat /etc/php.ini
+fi
