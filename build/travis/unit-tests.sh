@@ -38,6 +38,7 @@ if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
    echo "\n\n### PHP $TRAVIS_PHP_VERSION Configuration";
    cat /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/php.ini
    ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/conf.d/
+   cat /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/conf.d/travis.ini
 else
    echo "\n\n### PHP $TRAVIS_PHP_VERSION Configuration";
    cat /etc/php.ini
