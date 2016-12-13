@@ -40,7 +40,7 @@ if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
    ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/conf.d/
    cat /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/conf.d/travis.ini
    ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/share/pear
-   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/share/pear
+   find /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/ -name "*.so"
 else
    echo "\n\n### PHP $TRAVIS_PHP_VERSION Configuration";
    cat /etc/php.ini
