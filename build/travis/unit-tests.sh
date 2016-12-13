@@ -35,9 +35,10 @@ if [[ $INSTALL_REDIS == "yes" && $TRAVIS_PHP_VERSION != hhvm ]]; then phpenv con
 if [[ $INSTALL_REDIS == "yes" && $TRAVIS_PHP_VERSION = hhvm ]]; then cat "$BASE/build/travis/phpenv/redis.ini" >> /etc/hhvm/php.ini; fi
 
 if [[ $TRAVIS_PHP_VERSION != hhvm ]]; then
-   echo "PHP $TRAVIS_PHP_VERSION Configuration";
+   echo "\n\n### PHP $TRAVIS_PHP_VERSION Configuration";
    cat /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/php.ini
+   ls -la /home/travis/.phpenv/versions/$TRAVIS_PHP_VERSION/etc/conf.d/
 else
-   echo "PHP $TRAVIS_PHP_VERSION Configuration";
+   echo "\n\n### PHP $TRAVIS_PHP_VERSION Configuration";
    cat /etc/php.ini
 fi
